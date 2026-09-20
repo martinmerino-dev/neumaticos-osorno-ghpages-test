@@ -1,0 +1,123 @@
+---
+// ============================================================================
+// Hero
+// ============================================================================
+// A reusable page-top section: big headline, supporting text, an optional
+// image, and an optional call-to-action button. Every content page (Home,
+// Maxxis, Neumáticos, etc.) can use this with different text/image instead
+// of each page hand-rolling its own title section, like the old
+// ".section-title" markup that was copy-pasted into every file.
+//
+// Props:
+//   eyebrow    - small label above the headline (e.g. "Neumáticos Osorno")
+//   title      - the page's main heading (rendered as <h1>)
+//   subtitle   - one or two supporting sentences
+//   image      - optional path under /public to show alongside the text
+//   ctaText/ctaHref - optional button
+// ============================================================================
+interface Props {
+  eyebrow?: string;
+  title: string;
+  subtitle?: string;
+  image?: string;
+  ctaText?: string;
+  ctaHref?: string;
+}
+
+const { eyebrow, title, subtitle, image, ctaText, ctaHref } = Astro.props;
+---
+
+<section class="hero">
+  <div class="container hero-inner" class:list={{ "has-image": Boolean(image) }}>
+    <div class="hero-copy">
+      {eyebrow && <p class="hero-eyebrow">{eyebrow}</p>}
+      <h1>{title}</h1>
+      {subtitle && <p class="hero-subtitle">{subtitle}</p>}
+      {
+        ctaText && ctaHref && (
+          <a class="hero-cta" href={ctaHref}>
+            {ctaText}
+          </a>
+        )
+      }
+    </div>
+
+    {
+      image && (
+        <div class="hero-media">
+          <img src={image} alt="" />
+        </div>
+      )
+    }
+  </div>
+</section>
+
+<style>
+  .hero {
+    background: var(--color-bg-inverted);
+    color: var(--color-text-inverted);
+  }
+
+  .hero-inner {
+    display: grid;
+    gap: var(--space-6);
+    padding-block: var(--space-9);
+    align-items: center;
+  }
+
+  .hero-inner.has-image {
+    grid-template-columns: 1.1fr 1fr;
+  }
+
+  .hero-eyebrow {
+    color: var(--color-brand);
+    font-weight: var(--font-weight-semibold);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: var(--font-size-sm);
+    margin-bottom: var(--space-3);
+  }
+
+  .hero h1 {
+    color: var(--color-text-inverted);
+  }
+
+  .hero-subtitle {
+    margin-top: var(--space-4);
+    max-width: 48ch;
+    color: var(--color-mist);
+    font-size: var(--font-size-lg);
+  }
+
+  .hero-cta {
+    display: inline-block;
+    margin-top: var(--space-6);
+    padding: var(--space-3) var(--space-6);
+    background: var(--color-brand);
+    color: var(--color-text-inverted);
+    font-weight: var(--font-weight-semibold);
+    border-radius: var(--radius-md);
+    transition: background-color var(--transition-base), transform var(--transition-base);
+  }
+
+  .hero-cta:hover {
+    background: var(--color-brand-dark);
+    transform: translateY(-2px);
+  }
+
+  .hero-media img {
+    width: 100%;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+  }
+
+  @media (max-width: 900px) {
+    .hero-inner.has-image {
+      grid-template-columns: 1fr;
+    }
+
+    .hero-media {
+      order: -1;
+    }
+  }
+</style>

@@ -1,0 +1,88 @@
+---
+// ============================================================================
+// BaseLayout
+// ============================================================================
+// The shared page shell. Every page in src/pages/ wraps its content in
+// this layout, which is responsible for:
+//   - the <head> (title, meta description, fonts, global stylesheet)
+//   - the parts that appear on every page: Navbar, free-shipping banner,
+//     footer, floating WhatsApp button
+// A page only needs to provide a title/description and its own content
+// via the default <slot />.
+//
+// Props:
+//   title       - page-specific <title>, shown in the browser tab/search
+//                 results (required, and should be different per page).
+//   description - page-specific meta description (required for SEO -
+//                 the old site only had this on the homepage).
+// ============================================================================
+import Navbar from "../components/Navbar.astro";
+import Footer from "../components/Footer.astro";
+import FreeShippingBanner from "../components/FreeShippingBanner.astro";
+import WhatsAppButton from "../components/WhatsAppButton.astro";
+import "../styles/global.css";
+
+interface Props {
+  title: string;
+  description: string;
+}
+
+const { title, description } = Astro.props;
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={new URL(Astro.url.pathname, Astro.site)} />
+
+    <!--
+      Using the Google Fonts CDN for now, same as the current live site.
+      Self-hosting Inter (to shave off this external request) is a planned
+      follow-up performance improvement, not part of this foundation.
+    -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+
+  <body>
+    <a href="#main-content" class="skip-link">Saltar al contenido</a>
+
+    <Navbar />
+    <FreeShippingBanner />
+
+    <main id="main-content">
+      <slot />
+    </main>
+
+    <WhatsAppButton />
+    <Footer />
+  </body>
+</html>
+
+<style>
+  /* "Skip to content" link: invisible until a keyboard user tabs to it,
+     then it jumps straight past the navbar - a real accessibility gap on
+     the old site. */
+  .skip-link {
+    position: absolute;
+    left: -999px;
+    top: 0;
+    background: var(--color-brand);
+    color: var(--color-text-inverted);
+    padding: var(--space-2) var(--space-4);
+    z-index: 1000;
+  }
+
+  .skip-link:focus {
+    left: var(--space-2);
+    top: var(--space-2);
+  }
+</style>

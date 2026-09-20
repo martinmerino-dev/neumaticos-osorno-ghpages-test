@@ -1,0 +1,153 @@
+/* ==========================================================================
+   BASE STYLES
+   ==========================================================================
+
+   This file styles raw HTML elements (body, headings, paragraphs, links...)
+   using the tokens from tokens.css. It does NOT contain any classes for
+   specific components (.navbar, .product-card, etc.) - those live inside
+   each component's own <style> block in src/components/.
+
+   Why split it this way?
+   - tokens.css   -> WHAT values exist (the palette/scale).
+   - base.css     -> How plain HTML looks by default, site-wide.
+   - global.css   -> imports both, plus a few tiny page-layout helpers.
+   - <style> in
+     each component -> how THAT one component looks. Astro automatically
+     scopes these styles so they can't leak out and affect other
+     components by accident - this is what keeps a big site's CSS
+     manageable instead of turning into one giant file like the old
+     771-line style.css.
+   ========================================================================== */
+
+/* 1. RESET
+   Remove browser default spacing and make sizing predictable everywhere. */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* 2. ROOT ELEMENT
+   `color-scheme: light` tells the browser this site is designed for light
+   mode and should not auto-invert form controls/scrollbars in dark mode.
+   (The old site fought the browser's dark mode with !important overrides -
+   this is the correct, non-hacky way to say the same thing.) */
+html {
+  color-scheme: light;
+  scroll-behavior: smooth;
+}
+
+/* 3. BODY
+   Sets the default font, text color and background for the whole site. */
+body {
+  font-family: var(--font-body);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-base);
+  color: var(--color-text);
+  background-color: var(--color-bg);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  /* Pushes the footer to the bottom on short pages, see main below. */
+}
+
+/* The <main> element grows to fill any leftover vertical space, which is
+   what keeps the footer pinned to the bottom of the viewport on pages
+   with little content. */
+main {
+  flex: 1;
+}
+
+/* 4. HEADINGS
+   Bold, tight, dark - matches the "strong typography" goal in the brief. */
+h1,
+h2,
+h3,
+h4 {
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight);
+  letter-spacing: -0.02em;
+  color: var(--color-ink);
+}
+
+h1 {
+  font-size: var(--font-size-3xl);
+}
+
+h2 {
+  font-size: var(--font-size-2xl);
+}
+
+h3 {
+  font-size: var(--font-size-xl);
+}
+
+/* 5. LINKS
+   No default underline; components decide their own link styling. */
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* 6. IMAGES
+   Images never overflow their container by default. */
+img {
+  max-width: 100%;
+  display: block;
+}
+
+/* 7. FORM ELEMENTS
+   Make inputs/buttons inherit the site font instead of the browser's
+   default UI font (this is a very common thing people forget). */
+input,
+textarea,
+button {
+  font-family: inherit;
+  font-size: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+/* 8. ACCESSIBILITY: FOCUS STATE
+   A clear, visible focus ring for keyboard users. Using `:focus-visible`
+   means mouse clicks won't show the ring, only keyboard/assistive tech
+   navigation will - the modern, correct way to do this. */
+:focus-visible {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 2px;
+}
+
+/* 9. ACCESSIBILITY: REDUCED MOTION
+   If the visitor's OS says "reduce motion", we shrink every animation/
+   transition to near-nothing, site-wide, in one place - instead of every
+   component having to remember to handle this individually. */
+@media (prefers-reduced-motion: reduce) {
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* 10. SCREEN-READER-ONLY UTILITY
+   Hides an element visually but keeps it readable by screen readers.
+   Used for things like a "Skip to content" link or extra button context. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

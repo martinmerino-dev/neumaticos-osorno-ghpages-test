@@ -1,0 +1,175 @@
+/* ==========================================================================
+   DESIGN TOKENS
+   ==========================================================================
+
+   This file is the single source of truth for the site's visual language:
+   colors, fonts, spacing, radius, shadows and transitions.
+
+   The idea of a "design token" is simple: instead of writing a color like
+   "#f2610d" inside 20 different component files, we write it ONCE here as
+   a CSS custom property (--color-brand), and every component just refers
+   to --color-brand. If the brand color ever needs to change, we edit ONE
+   line in this file instead of hunting through every component.
+
+   Every component in src/components/ should use these variables instead
+   of hardcoding its own colors/sizes. If a component needs a value that
+   isn't here, that's a sign we should add a new token below rather than
+   inventing a one-off number inside the component.
+
+   All tokens live on :root, which means they are global and available
+   anywhere in the project (inside any <style> block in any .astro file).
+   ========================================================================== */
+
+:root {
+  /* ------------------------------------------------------------------------
+     COLORS
+     ------------------------------------------------------------------------
+     Direction: dark, industrial / automotive workshop feel (charcoal,
+     asphalt gray, brushed steel) with the brand orange as the one accent
+     color that draws the eye to actions (buttons, links, highlights).
+     This is intentionally NOT a bright, colorful "SaaS" palette.
+  ------------------------------------------------------------------------ */
+
+  /* Brand accent - kept from the current site, it's already the real,
+     recognized brand color (used on the logo and the WhatsApp CTA today). */
+  --color-brand: #f2610d;
+  --color-brand-dark: #c94e08;
+  /* Used for hover/active states: a darker shade of the brand color. */
+
+  /* Neutrals - the "industrial" part of the palette. Graphite/charcoal
+     instead of pure black, so text and backgrounds feel less harsh. */
+  --color-ink: #16181c;
+  /* near-black, used for headings and dark backgrounds */
+  --color-charcoal: #23262b;
+  /* dark surface, e.g. footer, dark sections */
+  --color-steel: #4b515a;
+  /* mid gray, secondary text on light backgrounds */
+  --color-fog: #8a8f98;
+  /* light gray, muted/help text */
+  --color-mist: #e7e8ea;
+  /* very light gray, subtle borders/dividers */
+  --color-paper: #f7f7f5;
+  /* off-white background for light sections */
+  --color-white: #ffffff;
+
+  /* Semantic aliases - components should prefer these names, because they
+     describe *purpose*, not the raw color. This means we can restyle the
+     whole site later by changing only the aliases below. */
+  --color-bg: var(--color-paper);
+  /* default page background */
+  --color-bg-inverted: var(--color-ink);
+  /* dark sections (hero, footer) */
+  --color-surface: var(--color-white);
+  /* cards, navbar, form panels */
+  --color-text: var(--color-ink);
+  /* default body text */
+  --color-text-muted: var(--color-steel);
+  /* secondary text */
+  --color-text-inverted: var(--color-white);
+  /* text on dark backgrounds */
+  --color-border: var(--color-mist);
+  /* default hairline border color */
+
+  /* ------------------------------------------------------------------------
+     TYPOGRAPHY
+     ------------------------------------------------------------------------
+     One font family for the whole site keeps things simple and fast
+     (no extra font files to load). Inter was already the site's font
+     and is a solid, modern, highly legible choice - we keep it.
+  ------------------------------------------------------------------------ */
+  --font-body: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  /* Fluid type scale using clamp(min, preferred, max): the font size
+     grows smoothly between a small-screen minimum and a large-screen
+     maximum, instead of jumping abruptly at breakpoints. */
+  --font-size-sm: 0.875rem;
+  /* 14px - fine print, labels */
+  --font-size-base: 1rem;
+  /* 16px - body text */
+  --font-size-lg: 1.125rem;
+  /* 18px - lead paragraphs */
+  --font-size-xl: clamp(1.25rem, 1.1rem + 0.6vw, 1.5rem);
+  /* card titles */
+  --font-size-2xl: clamp(1.75rem, 1.4rem + 1.4vw, 2.5rem);
+  /* section headings (h2) */
+  --font-size-3xl: clamp(2.25rem, 1.6rem + 2.8vw, 3.75rem);
+  /* hero headline (h1) */
+
+  --font-weight-regular: 400;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 800;
+
+  --line-height-tight: 1.15;
+  /* headings */
+  --line-height-base: 1.6;
+  /* paragraphs */
+
+  /* ------------------------------------------------------------------------
+     SPACING
+     ------------------------------------------------------------------------
+     An 8px-based scale. Using a fixed scale (instead of random px values
+     like 13px, 22px, 37px...) is what makes a layout feel intentional
+     and consistent instead of "randomly spaced".
+  ------------------------------------------------------------------------ */
+  --space-1: 0.25rem;
+  /* 4px  */
+  --space-2: 0.5rem;
+  /* 8px  */
+  --space-3: 0.75rem;
+  /* 12px */
+  --space-4: 1rem;
+  /* 16px */
+  --space-5: 1.5rem;
+  /* 24px */
+  --space-6: 2rem;
+  /* 32px */
+  --space-7: 3rem;
+  /* 48px */
+  --space-8: 4rem;
+  /* 64px */
+  --space-9: 6rem;
+  /* 96px */
+
+  /* ------------------------------------------------------------------------
+     RADIUS
+     ------------------------------------------------------------------------ */
+  --radius-sm: 6px;
+  /* small elements: inputs, tags */
+  --radius-md: 12px;
+  /* cards, buttons */
+  --radius-lg: 20px;
+  /* large panels/sections */
+  --radius-full: 999px;
+  /* pills, floating buttons */
+
+  /* ------------------------------------------------------------------------
+     SHADOWS
+     ------------------------------------------------------------------------
+     Soft, low-opacity shadows read as "premium". Harsh, dark shadows
+     read as cheap/dated - so every shadow below uses a low alpha value.
+  ------------------------------------------------------------------------ */
+  --shadow-sm: 0 2px 8px rgba(22, 24, 28, 0.06);
+  --shadow-md: 0 8px 24px rgba(22, 24, 28, 0.1);
+  --shadow-lg: 0 20px 48px rgba(22, 24, 28, 0.16);
+
+  /* ------------------------------------------------------------------------
+     TRANSITIONS
+     ------------------------------------------------------------------------
+     Reusable timing so every hover/animation in the site feels like it
+     belongs to the same system, instead of every component picking its
+     own random duration.
+  ------------------------------------------------------------------------ */
+  --transition-fast: 150ms ease;
+  --transition-base: 250ms cubic-bezier(0.25, 0.8, 0.25, 1);
+  /* "premium" ease-out curve: starts quick, settles gently - used for
+     hover states and entrance animations. */
+  --transition-slow: 500ms cubic-bezier(0.25, 0.8, 0.25, 1);
+
+  /* ------------------------------------------------------------------------
+     LAYOUT
+     ------------------------------------------------------------------------ */
+  --container-width: 1200px;
+  /* max width of centered page content */
+  --container-padding: var(--space-4);
+  /* left/right breathing room on small screens */
+}

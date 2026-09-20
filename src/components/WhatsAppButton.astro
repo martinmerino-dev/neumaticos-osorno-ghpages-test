@@ -1,0 +1,48 @@
+---
+// ============================================================================
+// WhatsAppButton
+// ============================================================================
+// The floating call-to-action that follows the visitor down the page on
+// every page of the site. This is the business's main contact channel, so
+// it stays visually consistent and always in the same place.
+// ============================================================================
+import { site } from "../data/site.js";
+---
+
+<a
+  href={site.contact.whatsappUrl}
+  class="whatsapp-button"
+  target="_blank"
+  rel="noopener noreferrer"
+  aria-label="Escríbenos por WhatsApp"
+>
+  <img src="/icons/whatsapp.svg" alt="" />
+</a>
+
+<style>
+  .whatsapp-button {
+    position: fixed;
+    right: var(--space-4);
+    bottom: var(--space-4);
+    z-index: 200;
+    width: 56px;
+    height: 56px;
+    display: grid;
+    place-items: center;
+    background: #25d366;
+    /* WhatsApp's own brand green - correct here because this is literally
+       their logo/button, not a site accent color. */
+    border-radius: var(--radius-full);
+    box-shadow: var(--shadow-lg);
+    transition: transform var(--transition-base);
+  }
+
+  .whatsapp-button:hover {
+    transform: scale(1.08);
+  }
+
+  .whatsapp-button img {
+    width: 30px;
+    height: 30px;
+  }
+</style>

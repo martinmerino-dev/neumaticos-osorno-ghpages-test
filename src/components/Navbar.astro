@@ -1,0 +1,153 @@
+---
+// ============================================================================
+// Navbar
+// ============================================================================
+// Sticky top navigation with the logo, the main nav links, and a hamburger
+// toggle for small screens. Appears once per page via BaseLayout.astro, so
+// this file is the ONLY place navbar markup/styling lives (the old site
+// duplicated this exact block by hand in all 5 HTML files).
+//
+// Props: none - the link list and active-page logic are fully data-driven
+// from src/data/site.js, so adding/renaming a page only requires editing
+// that one file.
+// ============================================================================
+import { site } from "../data/site.js";
+
+// Astro.url.pathname is the current page's path (e.g. "/maxxis.html").
+// We use it to mark the matching nav link as active, the same way the old
+// site manually added class="active" to one <a> per page.
+const currentPath = Astro.url.pathname;
+---
+
+<nav class="navbar">
+  <div class="navbar-inner container">
+    <a href="/" class="brand">
+      <img src="/images/logo.jpg" alt={site.name} class="brand-logo" />
+    </a>
+
+    <button
+      type="button"
+      class="nav-toggle"
+      data-nav-toggle
+      aria-expanded="false"
+      aria-controls="primary-nav"
+      aria-label="Abrir menú de navegación"
+    >
+      <span class="nav-toggle-bar"></span>
+      <span class="nav-toggle-bar"></span>
+      <span class="nav-toggle-bar"></span>
+    </button>
+
+    <ul class="nav-links" id="primary-nav" data-nav-links>
+      {
+        site.nav.map((item) => (
+          <li>
+            <a href={item.href} aria-current={currentPath === item.href ? "page" : undefined}>
+              {item.label}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</nav>
+
+<script>
+  import { initNav } from "../scripts/nav.js";
+  initNav();
+</script>
+
+<style>
+  .navbar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--color-surface);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .navbar-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-block: var(--space-3);
+  }
+
+  .brand-logo {
+    height: 44px;
+    width: auto;
+    object-fit: contain;
+  }
+
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    list-style: none;
+  }
+
+  .nav-links a {
+    display: inline-block;
+    padding: var(--space-2) var(--space-4);
+    border-radius: var(--radius-sm);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text);
+    transition: background-color var(--transition-fast), color var(--transition-fast);
+  }
+
+  .nav-links a:hover,
+  .nav-links a[aria-current="page"] {
+    background: var(--color-brand);
+    color: var(--color-text-inverted);
+  }
+
+  /* Hamburger button: hidden on desktop, shown on mobile below. */
+  .nav-toggle {
+    display: none;
+    flex-direction: column;
+    gap: 5px;
+    background: none;
+    border: none;
+    padding: var(--space-2);
+  }
+
+  .nav-toggle-bar {
+    width: 24px;
+    height: 2px;
+    background: var(--color-ink);
+    border-radius: var(--radius-full);
+    transition: transform var(--transition-fast);
+  }
+
+  @media (max-width: 768px) {
+    .nav-toggle {
+      display: flex;
+    }
+
+    .nav-links {
+      display: none;
+      position: absolute;
+      inset-inline: 0;
+      top: 100%;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0;
+      background: var(--color-surface);
+      box-shadow: var(--shadow-md);
+      padding: var(--space-3);
+    }
+
+    .nav-links.is-open {
+      display: flex;
+    }
+
+    .nav-links a {
+      text-align: center;
+      padding: var(--space-3);
+    }
+
+    .navbar-inner {
+      position: relative;
+    }
+  }
+</style>

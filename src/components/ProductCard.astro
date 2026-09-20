@@ -1,0 +1,131 @@
+---
+// ============================================================================
+// ProductCard
+// ============================================================================
+// Renders ONE tire: photo, name, type/usage, and an expandable feature
+// list. Takes a single `product` object shaped like the entries in
+// src/data/products.js - it doesn't know or care which brand/page it's
+// used on, so the exact same component renders Maxxis tires, Roadcruza
+// tires, etc.
+//
+// `index` is optional and only used to stagger the entrance animation
+// when several cards appear in a ProductGrid (see below).
+// ============================================================================
+interface Product {
+  slug: string;
+  name: string;
+  type: string;
+  usage: string;
+  features: string[];
+  image: string;
+}
+
+interface Props {
+  product: Product;
+  index?: number;
+}
+
+const { product, index = 0 } = Astro.props;
+---
+
+<article class="product-card" style={`--stagger-index:${index}`}>
+  <img src={`/images/products/${product.image}`} alt={product.name} loading="lazy" width="320" height="220" />
+  <h3>{product.name}</h3>
+
+  <button type="button" class="toggle-info" data-toggle-info aria-expanded="false">
+    Ver más
+  </button>
+
+  <div class="product-info">
+    <p><strong>Tipo:</strong> {product.type}</p>
+    <p><strong>Uso:</strong> {product.usage}</p>
+    <ul>
+      {product.features.map((feature) => <li>{feature}</li>)}
+    </ul>
+  </div>
+</article>
+
+<script>
+  import { initProductAccordions } from "../scripts/productAccordion.js";
+  initProductAccordions();
+</script>
+
+<style>
+  .product-card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    padding: var(--space-5);
+    text-align: center;
+    transition: transform var(--transition-base), box-shadow var(--transition-base);
+
+    /* Entrance animation, staggered per-card using the --stagger-index
+       custom property set from the `index` prop above. */
+    opacity: 0;
+    animation: fade-up var(--transition-slow) forwards;
+    animation-delay: calc(var(--stagger-index) * 80ms);
+  }
+
+  .product-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-md);
+  }
+
+  .product-card img {
+    max-height: 200px;
+    width: 100%;
+    object-fit: contain;
+    margin-bottom: var(--space-3);
+  }
+
+  .product-card h3 {
+    margin-bottom: var(--space-3);
+  }
+
+  .toggle-info {
+    background: var(--color-brand);
+    color: var(--color-text-inverted);
+    border: none;
+    padding: var(--space-2) var(--space-4);
+    border-radius: var(--radius-sm);
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-sm);
+    transition: background-color var(--transition-fast);
+  }
+
+  .toggle-info:hover {
+    background: var(--color-brand-dark);
+  }
+
+  .product-info {
+    max-height: 0;
+    overflow: hidden;
+    text-align: left;
+    margin-top: var(--space-3);
+    color: var(--color-text-muted);
+    transition: max-height var(--transition-slow), opacity var(--transition-base);
+    opacity: 0;
+  }
+
+  .product-info.is-open {
+    max-height: 24rem;
+    opacity: 1;
+  }
+
+  .product-info ul {
+    margin-top: var(--space-2);
+    padding-left: var(--space-5);
+  }
+
+  @keyframes fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+</style>

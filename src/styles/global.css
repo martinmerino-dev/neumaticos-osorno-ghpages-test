@@ -1,0 +1,29 @@
+/* ==========================================================================
+   GLOBAL STYLESHEET
+   ==========================================================================
+   This is the ONLY stylesheet imported by every page (via BaseLayout.astro).
+   It just pulls in the tokens + base element styles, and adds a couple of
+   tiny, truly page-agnostic layout helpers that many components share.
+
+   Everything else (navbar styling, card styling, button styling, etc.)
+   lives locally inside its own component file - see the comment at the
+   top of base.css for why we organize things this way.
+   ========================================================================== */
+
+@import "./tokens.css";
+@import "./base.css";
+
+/* .container: centers content and caps its width, with side padding on
+   small screens. Almost every section on the site wraps its content in
+   this class so everything lines up on the same edges. */
+.container {
+  width: 100%;
+  max-width: var(--container-width);
+  margin-inline: auto;
+  padding-inline: var(--container-padding);
+}
+
+/* .section: consistent vertical breathing room between page sections. */
+.section {
+  padding-block: var(--space-8);
+}

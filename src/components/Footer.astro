@@ -1,0 +1,49 @@
+---
+// ============================================================================
+// Footer
+// ============================================================================
+// Same business contact info on every page. Data comes from
+// src/data/site.js, so updating a phone number or the email address only
+// requires editing that one file - not all 5 pages.
+// ============================================================================
+import { site } from "../data/site.js";
+---
+
+<footer class="footer">
+  <div class="container footer-inner">
+    <p class="footer-name">{site.name}</p>
+    <p>{site.footer.copyright}</p>
+    <p class="footer-contact">
+      {site.contact.phones.join(" / ")} &nbsp;|&nbsp;
+      <a href={`mailto:${site.contact.email}`}>{site.contact.email}</a>
+    </p>
+  </div>
+</footer>
+
+<style>
+  .footer {
+    background: var(--color-bg-inverted);
+    color: var(--color-text-inverted);
+    margin-top: var(--space-9);
+  }
+
+  .footer-inner {
+    padding-block: var(--space-7);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  .footer-name {
+    font-weight: var(--font-weight-bold);
+    font-size: var(--font-size-lg);
+    color: var(--color-text-inverted);
+  }
+
+  .footer-contact a {
+    color: var(--color-text-inverted);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+</style>
