@@ -8,9 +8,13 @@
 // of each page inventing its own closing section.
 //
 // Props:
-//   heading, text   - the message
-//   ctaText/ctaHref - the button (defaults to the WhatsApp link so this
-//                      works out of the box with zero props on most pages)
+//   heading, text     - the message
+//   ctaText/ctaHref   - the button (defaults to the WhatsApp link so this
+//                        works out of the box with zero props on most pages)
+//   showContactDetails - when true, also lists the real phone numbers and
+//                        email below the button (used as the homepage's
+//                        final, strongest CTA - every real contact
+//                        channel in one place)
 // ============================================================================
 import { site } from "../data/site.js";
 
@@ -19,6 +23,7 @@ interface Props {
   text?: string;
   ctaText?: string;
   ctaHref?: string;
+  showContactDetails?: boolean;
 }
 
 const {
@@ -26,16 +31,26 @@ const {
   text,
   ctaText = "Escríbenos por WhatsApp",
   ctaHref = site.contact.whatsappUrl,
+  showContactDetails = false,
 } = Astro.props;
 ---
 
 <section class="cta section">
-  <div class="container cta-inner">
+  <div class="container cta-inner" data-reveal>
     <h2>{heading}</h2>
     {text && <p>{text}</p>}
     <a class="cta-button" href={ctaHref} target="_blank" rel="noopener noreferrer">
       {ctaText}
     </a>
+
+    {
+      showContactDetails && (
+        <p class="cta-details">
+          {site.contact.phones.join(" / ")} &nbsp;·&nbsp;
+          <a href={`mailto:${site.contact.email}`}>{site.contact.email}</a>
+        </p>
+      )
+    }
   </div>
 </section>
 
@@ -65,5 +80,15 @@ const {
   .cta-button:hover {
     background: var(--color-brand-dark);
     transform: translateY(-2px);
+  }
+
+  .cta-details {
+    margin-top: var(--space-4);
+    font-size: var(--font-size-sm);
+  }
+
+  .cta-details a {
+    text-decoration: underline;
+    text-underline-offset: 3px;
   }
 </style>

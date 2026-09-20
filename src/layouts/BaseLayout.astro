@@ -15,19 +15,39 @@
 //                 results (required, and should be different per page).
 //   description - page-specific meta description (required for SEO -
 //                 the old site only had this on the homepage).
+//   ogImage     - optional absolute-path image for social share previews
+//                 (defaults to the workshop photo - a real, existing photo,
+//                 not a placeholder).
 // ============================================================================
 import Navbar from "../components/Navbar.astro";
 import Footer from "../components/Footer.astro";
 import FreeShippingBanner from "../components/FreeShippingBanner.astro";
 import WhatsAppButton from "../components/WhatsAppButton.astro";
+import { site } from "../data/site.js";
 import "../styles/global.css";
 
 interface Props {
   title: string;
   description: string;
+  ogImage?: string;
 }
 
-const { title, description } = Astro.props;
+const { title, description, ogImage = "/images/workshop-hero.png" } = Astro.props;
+const canonicalUrl = new URL(Astro.url.pathname, Astro.site);
+
+// Minimal, honest structured data: only fields we actually have real
+// values for (name/url/phone/email). No street address or opening hours
+// are listed here because that information isn't present anywhere on the
+// current live site - see the [CONTENT SUGGESTION] note in the project
+// report rather than guessing at it.
+const structuredData = {
+  "@context": "https://schema.org",
+  "@type": "AutoPartsStore",
+  name: site.name,
+  url: site.domain,
+  telephone: site.contact.phones[0],
+  email: site.contact.email,
+};
 ---
 
 <!doctype html>
@@ -37,7 +57,17 @@ const { title, description } = Astro.props;
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{title}</title>
     <meta name="description" content={description} />
-    <link rel="canonical" href={new URL(Astro.url.pathname, Astro.site)} />
+    <link rel="canonical" href={canonicalUrl} />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={site.name} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:image" content={new URL(ogImage, Astro.site)} />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
 
     <!--
       Using the Google Fonts CDN for now, same as the current live site.
@@ -64,6 +94,11 @@ const { title, description } = Astro.props;
 
     <WhatsAppButton />
     <Footer />
+
+    <script>
+      import { initScrollReveal } from "../scripts/scrollReveal.js";
+      initScrollReveal();
+    </script>
   </body>
 </html>
 

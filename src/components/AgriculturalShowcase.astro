@@ -1,0 +1,116 @@
+---
+// ============================================================================
+// AgriculturalShowcase
+// ============================================================================
+// Dedicated homepage section for the agricultural tire brands, separate
+// from the category-discovery cards above - this is the one place the
+// homepage actually shows the 5 real brand logos, plus a link through to
+// the full Neumáticos Agrícolas page. All names/images come from
+// src/data/products.js (agriculturalBrands), copied from the current
+// live page - nothing invented.
+// ============================================================================
+interface Brand {
+  slug: string;
+  name: string;
+  image: string;
+}
+
+interface Props {
+  brands: Brand[];
+  href: string;
+}
+
+const { brands, href } = Astro.props;
+---
+
+<section class="agro section">
+  <div class="container agro-inner">
+    <div class="agro-copy" data-reveal>
+      <p class="agro-eyebrow">Línea agrícola</p>
+      <h2>Neumáticos agrícolas</h2>
+      <p>Trabajamos con marcas especializadas para maquinaria y trabajo de campo.</p>
+      <a class="agro-link" href={href}>Ver línea agrícola completa →</a>
+    </div>
+
+    <div class="agro-logos" data-reveal-group>
+      {
+        brands.map((brand) => (
+          <div class="agro-logo-card">
+            <img src={`/images/brands/${brand.image}`} alt={brand.name} loading="lazy" width="120" height="80" />
+          </div>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<style>
+  .agro-inner {
+    display: grid;
+    gap: var(--space-7);
+    grid-template-columns: 1fr 1.2fr;
+    align-items: center;
+  }
+
+  .agro-eyebrow {
+    color: var(--color-brand);
+    font-weight: var(--font-weight-semibold);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: var(--font-size-sm);
+    margin-bottom: var(--space-3);
+  }
+
+  .agro-copy p {
+    margin-top: var(--space-3);
+    color: var(--color-text-muted);
+    max-width: 42ch;
+  }
+
+  .agro-link {
+    display: inline-block;
+    margin-top: var(--space-5);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-brand);
+  }
+
+  .agro-logos {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-4);
+  }
+
+  .agro-logo-card {
+    display: grid;
+    place-items: center;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-4);
+    box-shadow: var(--shadow-sm);
+    transition: transform var(--transition-base), box-shadow var(--transition-base);
+  }
+
+  .agro-logo-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-md);
+  }
+
+  .agro-logo-card img {
+    max-width: 100%;
+    height: 48px;
+    object-fit: contain;
+  }
+
+  @media (max-width: 900px) {
+    .agro-inner {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .agro-logos {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+</style>

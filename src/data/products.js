@@ -178,3 +178,15 @@ export const agriculturalBrands = [
   { slug: "ozka", name: "Ozka", image: "ozka.png" },
   { slug: "pirelli", name: "Pirelli", image: "pirelli.png" },
 ];
+
+// Derived (not hand-typed) list of on-road tire brand names, taken from
+// each product's own name - e.g. "Roadcruza RA7000" contributes
+// "Roadcruza". We don't have separate logo artwork for these brands (only
+// for the agricultural ones above), so pages display them as text badges
+// instead of guessing at a logo. Computing this from the product data
+// means it can never drift out of sync with what's actually for sale.
+const brandFromProductName = (product) => product.name.split(" ")[0];
+
+export const onRoadBrandNames = [
+  ...new Set([...maxxisProducts, ...neumaticosProducts].map(brandFromProductName)),
+];

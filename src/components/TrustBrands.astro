@@ -1,0 +1,95 @@
+---
+// ============================================================================
+// TrustBrands
+// ============================================================================
+// A compact row of every brand the business actually carries: real logos
+// for the brands we have artwork for (the agricultural ones), and clean
+// text badges for the rest (Maxxis, Roadcruza, Triangle, Goodride, Hilo -
+// no separate logo files exist for these, only product photos, so we
+// don't fabricate a logo for them).
+//
+// Props:
+//   logoBrands - [{ name, image }] shown with their real logo
+//   nameBrands - string[] shown as text badges
+// ============================================================================
+interface LogoBrand {
+  name: string;
+  image: string;
+}
+
+interface Props {
+  logoBrands: LogoBrand[];
+  nameBrands: string[];
+}
+
+const { logoBrands, nameBrands } = Astro.props;
+---
+
+<section class="trust section">
+  <div class="container">
+    <p class="trust-label">Marcas con las que trabajamos</p>
+
+    <div class="trust-row" data-reveal-group>
+      {
+        logoBrands.map((brand) => (
+          <img
+            class="trust-logo"
+            src={`/images/brands/${brand.image}`}
+            alt={brand.name}
+            loading="lazy"
+            width="120"
+            height="60"
+          />
+        ))
+      }
+      {nameBrands.map((name) => <span class="trust-badge">{name}</span>)}
+    </div>
+  </div>
+</section>
+
+<style>
+  .trust {
+    padding-block: var(--space-7);
+  }
+
+  .trust-label {
+    text-align: center;
+    color: var(--color-text-muted);
+    font-weight: var(--font-weight-semibold);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: var(--font-size-sm);
+    margin-bottom: var(--space-5);
+  }
+
+  .trust-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: var(--space-5);
+  }
+
+  .trust-logo {
+    height: 40px;
+    width: auto;
+    object-fit: contain;
+    filter: grayscale(1);
+    opacity: 0.7;
+    transition: filter var(--transition-base), opacity var(--transition-base);
+  }
+
+  .trust-logo:hover {
+    filter: grayscale(0);
+    opacity: 1;
+  }
+
+  .trust-badge {
+    padding: var(--space-2) var(--space-4);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-full);
+    color: var(--color-text-muted);
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-sm);
+  }
+</style>

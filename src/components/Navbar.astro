@@ -19,7 +19,7 @@ import { site } from "../data/site.js";
 const currentPath = Astro.url.pathname;
 ---
 
-<nav class="navbar">
+<nav class="navbar" data-navbar>
   <div class="navbar-inner container">
     <a href="/" class="brand">
       <img src="/images/logo.jpg" alt={site.name} class="brand-logo" />
@@ -54,7 +54,9 @@ const currentPath = Astro.url.pathname;
 
 <script>
   import { initNav } from "../scripts/nav.js";
+  import { initNavbarScroll } from "../scripts/navbarScroll.js";
   initNav();
+  initNavbarScroll();
 </script>
 
 <style>
@@ -64,6 +66,14 @@ const currentPath = Astro.url.pathname;
     z-index: 100;
     background: var(--color-surface);
     box-shadow: var(--shadow-sm);
+    transition: box-shadow var(--transition-base);
+  }
+
+  /* Subtle "the interface knows where you are" cue: once the visitor has
+     scrolled past the hero, the bar compacts a little and its shadow
+     deepens - see navbarScroll.js for the class toggle. */
+  .navbar.is-scrolled {
+    box-shadow: var(--shadow-md);
   }
 
   .navbar-inner {
@@ -71,12 +81,22 @@ const currentPath = Astro.url.pathname;
     align-items: center;
     justify-content: space-between;
     padding-block: var(--space-3);
+    transition: padding-block var(--transition-base);
+  }
+
+  .navbar.is-scrolled .navbar-inner {
+    padding-block: var(--space-2);
   }
 
   .brand-logo {
     height: 44px;
     width: auto;
     object-fit: contain;
+    transition: height var(--transition-base);
+  }
+
+  .navbar.is-scrolled .brand-logo {
+    height: 34px;
   }
 
   .nav-links {

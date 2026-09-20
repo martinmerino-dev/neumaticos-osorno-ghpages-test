@@ -8,8 +8,12 @@
 // used on, so the exact same component renders Maxxis tires, Roadcruza
 // tires, etc.
 //
-// `index` is optional and only used to stagger the entrance animation
-// when several cards appear in a ProductGrid (see below).
+// The card itself has no entrance animation of its own - when several
+// cards sit inside a ProductGrid, the grid wraps them with
+// `data-reveal-group` and src/scripts/scrollReveal.js staggers them in
+// as the visitor scrolls to them. That keeps the animation scroll-driven
+// (not "everything fades in on page load") and means a card is fully
+// visible by default with no JS at all.
 // ============================================================================
 interface Product {
   slug: string;
@@ -22,13 +26,12 @@ interface Product {
 
 interface Props {
   product: Product;
-  index?: number;
 }
 
-const { product, index = 0 } = Astro.props;
+const { product } = Astro.props;
 ---
 
-<article class="product-card" style={`--stagger-index:${index}`}>
+<article class="product-card">
   <img src={`/images/products/${product.image}`} alt={product.name} loading="lazy" width="320" height="220" />
   <h3>{product.name}</h3>
 
@@ -59,12 +62,6 @@ const { product, index = 0 } = Astro.props;
     padding: var(--space-5);
     text-align: center;
     transition: transform var(--transition-base), box-shadow var(--transition-base);
-
-    /* Entrance animation, staggered per-card using the --stagger-index
-       custom property set from the `index` prop above. */
-    opacity: 0;
-    animation: fade-up var(--transition-slow) forwards;
-    animation-delay: calc(var(--stagger-index) * 80ms);
   }
 
   .product-card:hover {
@@ -116,16 +113,5 @@ const { product, index = 0 } = Astro.props;
   .product-info ul {
     margin-top: var(--space-2);
     padding-left: var(--space-5);
-  }
-
-  @keyframes fade-up {
-    from {
-      opacity: 0;
-      transform: translateY(16px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
   }
 </style>

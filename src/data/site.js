@@ -37,6 +37,10 @@ export const site = {
       "Nos comprometemos con un servicio responsable, incluyendo reciclaje de neumáticos y soluciones pensadas para cada cliente.",
       "En Neumáticos Osorno, no solo vendemos neumáticos, te acompañamos en cada kilómetro.",
     ],
+    // Short labels pulled directly from the paragraphs above (technical
+    // advice, close customer attention, tire recycling) - used to give
+    // the same facts stronger visual hierarchy without adding new claims.
+    highlights: ["Asesoría técnica", "Atención cercana", "Reciclaje de neumáticos"],
   },
 
   // Drives the Navbar links and (later) each page's active-link state.
