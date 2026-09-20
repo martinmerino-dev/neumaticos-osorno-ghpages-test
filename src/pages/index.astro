@@ -28,6 +28,19 @@ const [firstParagraph, ...restParagraphs] = site.about.paragraphs;
 
 const featuredProducts = maxxisProducts.slice(0, 3);
 
+// One unified list for the TrustBrands marquee: real logos for the
+// brands we have artwork for, plain names for the rest. Order matters
+// less here than variety - agricultural logos are interleaved with the
+// on-road brand names so the band doesn't read as "all logos, then all
+// text".
+const trustBrands = [
+  ...agriculturalBrands.map((brand) => ({
+    name: brand.name,
+    image: `/images/brands/${brand.image}`,
+  })),
+  ...onRoadBrandNames.map((name) => ({ name })),
+];
+
 const categories = [
   {
     title: "Maxxis",
@@ -59,7 +72,7 @@ const categories = [
     secondaryCta={{ text: "Escríbenos por WhatsApp", href: site.contact.whatsappUrl }}
   />
 
-  <TrustBrands logoBrands={agriculturalBrands} nameBrands={onRoadBrandNames} />
+  <TrustBrands brands={trustBrands} />
 
   <section class="section">
     <div class="container">

@@ -2,47 +2,67 @@
 // ============================================================================
 // TrustBrands
 // ============================================================================
-// A compact row of every brand the business actually carries: real logos
-// for the brands we have artwork for (the agricultural ones), and clean
-// text badges for the rest (Maxxis, Roadcruza, Triangle, Goodride, Hilo -
-// no separate logo files exist for these, only product photos, so we
-// don't fabricate a logo for them).
+// A continuously scrolling "band" of every brand the business carries -
+// real logos for the brands we have artwork for (the agricultural ones),
+// and clean text badges for the rest (Maxxis, Roadcruza, Triangle,
+// Goodride, Hilo - no separate logo files exist for these, only product
+// photos, so we don't fabricate a logo for them). Every entry is wrapped
+// in the same size/shape "chip" so logos and text badges read as one
+// consistent set instead of a mismatched row.
+//
+// How the loop works: the brand list is rendered TWICE, back-to-back,
+// inside a flex track that animates from translateX(0) to translateX(-50%)
+// - since both halves are identical, the moment it reaches -50% it looks
+// exactly like it did at 0%, so the jump back to the start is invisible
+// and the motion reads as an endless, seamless band. This is pure CSS
+// (no JS, no layout cost) - see the @keyframes at the bottom.
 //
 // Props:
-//   logoBrands - [{ name, image }] shown with their real logo
-//   nameBrands - string[] shown as text badges
+//   brands - [{ name, image? }] - image is a full path under /images/brands/
+//            when present; when absent, the chip shows the brand name as
+//            text instead.
 // ============================================================================
-interface LogoBrand {
+interface Brand {
   name: string;
-  image: string;
+  image?: string;
 }
 
 interface Props {
-  logoBrands: LogoBrand[];
-  nameBrands: string[];
+  brands: Brand[];
 }
 
-const { logoBrands, nameBrands } = Astro.props;
+const { brands } = Astro.props;
 ---
 
 <section class="trust section">
   <div class="container">
     <p class="trust-label">Marcas con las que trabajamos</p>
+  </div>
 
-    <div class="trust-row" data-reveal-group>
-      {
-        logoBrands.map((brand) => (
-          <img
-            class="trust-logo"
-            src={`/images/brands/${brand.image}`}
-            alt={brand.name}
-            loading="lazy"
-            width="120"
-            height="60"
-          />
-        ))
-      }
-      {nameBrands.map((name) => <span class="trust-badge">{name}</span>)}
+  <div class="trust-viewport">
+    <div class="trust-track">
+      <div class="trust-group">
+        {brands.map((brand) => (
+          <div class="trust-chip">
+            {brand.image ? (
+              <img src={brand.image} alt={brand.name} loading="lazy" width="120" height="32" />
+            ) : (
+              <span>{brand.name}</span>
+            )}
+          </div>
+        ))}
+      </div>
+      <div class="trust-group" aria-hidden="true">
+        {brands.map((brand) => (
+          <div class="trust-chip">
+            {brand.image ? (
+              <img src={brand.image} alt="" loading="lazy" width="120" height="32" />
+            ) : (
+              <span>{brand.name}</span>
+            )}
+          </div>
+        ))}
+      </div>
     </div>
   </div>
 </section>
@@ -62,34 +82,101 @@ const { logoBrands, nameBrands } = Astro.props;
     margin-bottom: var(--space-5);
   }
 
-  .trust-row {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    align-items: center;
-    gap: var(--space-5);
+  /* Full-bleed: breaks out of .container so the band runs edge-to-edge
+     across the page, like a physical strip, rather than stopping at the
+     1200px content width. */
+  .trust-viewport {
+    width: 100vw;
+    margin-left: calc(50% - 50vw);
+    overflow: hidden;
+    -webkit-mask-image: linear-gradient(90deg, transparent, black 8%, black 92%, transparent);
+    mask-image: linear-gradient(90deg, transparent, black 8%, black 92%, transparent);
   }
 
-  .trust-logo {
-    height: 40px;
+  .trust-track {
+    display: flex;
+    width: fit-content;
+    animation: trust-scroll 32s linear infinite;
+  }
+
+  /* Pausing on hover lets a visitor who wants to actually read a logo
+     stop the motion, instead of chasing a moving target. */
+  .trust-track:hover {
+    animation-play-state: paused;
+  }
+
+  .trust-group {
+    display: flex;
+    flex-shrink: 0;
+    gap: var(--space-4);
+    padding-right: var(--space-4);
+  }
+
+  .trust-chip {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 64px;
+    min-width: 140px;
+    padding-inline: var(--space-5);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    white-space: nowrap;
+  }
+
+  .trust-chip img {
+    max-height: 30px;
     width: auto;
     object-fit: contain;
     filter: grayscale(1);
-    opacity: 0.7;
+    opacity: 0.75;
     transition: filter var(--transition-base), opacity var(--transition-base);
   }
 
-  .trust-logo:hover {
+  .trust-chip:hover img {
     filter: grayscale(0);
     opacity: 1;
   }
 
-  .trust-badge {
-    padding: var(--space-2) var(--space-4);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-full);
-    color: var(--color-text-muted);
+  .trust-chip span {
     font-weight: var(--font-weight-semibold);
-    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+    letter-spacing: 0.02em;
+  }
+
+  @keyframes trust-scroll {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      /* Exactly one of the two identical groups' worth of distance. */
+      transform: translateX(-50%);
+    }
+  }
+
+  /* Reduced motion: a moving band IS motion, so instead of just slowing
+     it down we turn it back into the plain, static, wrapped row and drop
+     the duplicated (aria-hidden) copy so nothing is listed twice. */
+  @media (prefers-reduced-motion: reduce) {
+    .trust-viewport {
+      width: auto;
+      margin-left: 0;
+      overflow: visible;
+      mask-image: none;
+      -webkit-mask-image: none;
+    }
+
+    .trust-track {
+      animation: none;
+      width: auto;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .trust-group:nth-of-type(2) {
+      display: none;
+    }
   }
 </style>
