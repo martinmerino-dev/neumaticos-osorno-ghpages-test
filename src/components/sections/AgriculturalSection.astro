@@ -1,0 +1,208 @@
+---
+// ============================================================================
+// AgriculturalSection  (#agricolas)
+// ============================================================================
+// The rugged chapter. Black, heavy, industrial: a tractor-tread band that
+// rolls sideways with the scroll (pure decoration, drawn in CSS - not a
+// product photo), a massive "Agrícolas" title, and the five real brand
+// logos on white plates in an asymmetric grid.
+//
+// Content: the live site only has the brand logos for this line - no
+// agricultural tire photos, models or descriptions. The design is built
+// around that (typography + logos) rather than filling the gap with
+// invented copy or stock imagery.
+// TODO(content): real agricultural tire photos and a one-line description
+// of the line from the owner would let this chapter show product.
+// ============================================================================
+import { Image } from "astro:assets";
+import SplitWords from "../SplitWords.astro";
+import { agriculturalBrands } from "../../data/products.js";
+import { whatsappMessageUrl } from "../../data/site.js";
+import { brandLogo } from "../../data/media.js";
+---
+
+<section id="agricolas" class="agro" aria-labelledby="agricolas-title">
+  <div class="tread" aria-hidden="true">
+    <div class="tread-strip" data-drift="x" data-drift-amount="20"></div>
+  </div>
+
+  <div class="container agro-grid">
+    <h2 id="agricolas-title" class="agro-title">
+      <span class="agro-title-small" data-reveal-words><SplitWords text="Neumáticos" /></span>{" "}
+      <span class="agro-title-big" data-reveal-words><SplitWords text="Agrícolas" /></span>
+    </h2>
+
+    <div class="agro-body">
+      <div class="agro-meta" data-reveal>
+        <p class="agro-count">{agriculturalBrands.length} marcas con las que trabajamos</p>
+        <a
+          class="button button--red"
+          href={whatsappMessageUrl("Hola, quiero consultar por neumáticos agrícolas.")}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Consultar por neumáticos agrícolas
+          <span class="sr-only"> por WhatsApp (abre en una nueva pestaña)</span>
+        </a>
+      </div>
+
+      <ul class="agro-logos">
+        {
+          agriculturalBrands.map((brand) => (
+            <li class="agro-logo" data-reveal-mask>
+              <Image
+                src={brandLogo(brand.image)}
+                alt={brand.name}
+                widths={[240, 360, 480]}
+                sizes="(min-width: 1024px) 22vw, 44vw"
+                loading="lazy"
+              />
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </div>
+
+  <div class="tread tread--bottom" aria-hidden="true">
+    <div class="tread-strip" data-drift="x" data-drift-amount="-20"></div>
+  </div>
+</section>
+
+<style>
+  .agro {
+    position: relative;
+    z-index: 1;
+    background: var(--color-black);
+    color: var(--color-text-inverted);
+    overflow: hidden;
+  }
+
+  /* ---- Tread band -------------------------------------------------------
+     Angled lugs like an agricultural tire's tread, as a repeating SVG
+     tile. The strip is twice the viewport wide so it can drift sideways
+     (scrollReveal.js data-drift) without ever showing an edge. */
+  .tread {
+    height: 56px;
+    overflow: hidden;
+    border-block: 1px solid var(--color-charcoal);
+  }
+
+  .tread-strip {
+    width: 200%;
+    height: 100%;
+    margin-left: -50%;
+    background-color: var(--color-black);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='72' height='56' viewBox='0 0 72 56'%3E%3Cpath fill='%232c3036' d='M4 50 26 6h12L16 50zm64 0L46 6H34l22 44z'/%3E%3C/svg%3E");
+    background-size: 72px 56px;
+    background-repeat: repeat-x;
+  }
+
+  .tread--bottom .tread-strip {
+    transform: scaleY(-1);
+  }
+
+  /* ---- Layout ---------------------------------------------------------- */
+
+  .agro-grid {
+    display: grid;
+    gap: var(--space-7);
+    padding-block: var(--space-9);
+  }
+
+  .agro-body {
+    display: grid;
+    gap: var(--space-7);
+  }
+
+  .agro-title {
+    display: grid;
+    color: var(--color-text-inverted);
+    font-family: var(--font-display);
+    font-weight: var(--font-weight-black);
+    font-stretch: var(--font-stretch-condensed);
+    text-transform: uppercase;
+    line-height: 0.85;
+  }
+
+  .agro-title-small {
+    font-size: clamp(2rem, 1.2rem + 3vw, 4rem);
+    color: var(--color-brand);
+  }
+
+  .agro-title-big {
+    font-size: clamp(4rem, min(1rem + 16vw, 24svh), 15rem);
+    letter-spacing: -0.01em;
+  }
+
+  .agro-meta {
+    display: grid;
+    gap: var(--space-5);
+    justify-items: start;
+    align-content: end;
+  }
+
+  .agro-count {
+    font-weight: var(--font-weight-semibold);
+    font-stretch: var(--font-stretch-expanded);
+    font-size: var(--font-size-sm);
+    color: var(--color-text-inverted-muted);
+  }
+
+  /* ---- Logo wall --------------------------------------------------------
+     Six-column grid: two wide plates on top, three below. White plates
+     because several logo files have opaque white/yellow backgrounds. */
+  .agro-logos {
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2px;
+    background: var(--color-charcoal);
+    border: 2px solid var(--color-charcoal);
+  }
+
+  .agro-logo {
+    display: grid;
+    place-items: center;
+    aspect-ratio: 3 / 2;
+    padding: var(--space-5);
+    background: var(--color-white);
+  }
+
+  .agro-logo:first-child {
+    grid-column: 1 / -1;
+    aspect-ratio: 3 / 1.1;
+  }
+
+  .agro-logo :global(img) {
+    width: 100%;
+    height: 100%;
+    max-height: 96px;
+    object-fit: contain;
+  }
+
+  @media (min-width: 768px) {
+    .agro-logos {
+      grid-template-columns: repeat(6, 1fr);
+    }
+
+    .agro-logo,
+    .agro-logo:first-child {
+      grid-column: span 2;
+      aspect-ratio: 4 / 3;
+    }
+
+    .agro-logo:nth-child(-n + 2) {
+      grid-column: span 3;
+      aspect-ratio: 16 / 9;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .agro-body {
+      grid-template-columns: 4fr 8fr;
+      align-items: end;
+      gap: var(--space-8);
+    }
+  }
+</style>

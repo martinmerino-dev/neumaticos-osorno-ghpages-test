@@ -1,49 +1,190 @@
 ---
 // ============================================================================
-// Footer
+// Footer - the closing chapter
 // ============================================================================
-// Same business contact info on every page. Data comes from
-// src/data/site.js, so updating a phone number or the email address only
-// requires editing that one file - not all 5 pages.
+// Bookends the hero: the same two-line wordmark ("Neumáticos" in red,
+// "Osorno" in white, condensed black), rising out of its masks as the
+// page ends. Under it: the site's sections, every real contact channel,
+// a way back to the top, and the copyright - all from src/data/site.js.
+//
+// The wordmark is decorative (aria-hidden); the business name is read
+// once, from the copyright line.
 // ============================================================================
-import { site } from "../data/site.js";
+import SplitWords from "./SplitWords.astro";
+import { site, mapsLinks } from "../data/site.js";
+
+const telHref = (phone: string) => `tel:${phone.replace(/\s/g, "")}`;
 ---
 
 <footer class="footer">
-  <div class="container footer-inner">
-    <p class="footer-name">{site.name}</p>
-    <p>{site.footer.copyright}</p>
-    <p class="footer-contact">
-      {site.contact.phones.join(" / ")} &nbsp;|&nbsp;
-      <a href={`mailto:${site.contact.email}`}>{site.contact.email}</a>
+  <div class="container">
+    <p class="footer-wordmark" aria-hidden="true">
+      <span class="footer-line footer-line--red" data-reveal-words><SplitWords text={site.hero.titleLines[0]} /></span>
+      <span class="footer-line" data-reveal-words><SplitWords text={site.hero.titleLines[1]} /></span>
     </p>
+
+    <div class="footer-grid">
+      <nav class="footer-col" aria-label="Secciones">
+        <p class="footer-heading">Secciones</p>
+        <ul>
+          <li><a href="#inicio">Inicio</a></li>
+          {site.nav.map((item) => <li><a href={item.href}>{item.label}</a></li>)}
+        </ul>
+      </nav>
+
+      <div class="footer-col">
+        <p class="footer-heading">Contacto</p>
+        <ul>
+          <li>
+            <a href={site.contact.whatsappUrl} target="_blank" rel="noopener noreferrer">
+              WhatsApp {site.contact.whatsappPhone}<span class="sr-only"> (abre en una nueva pestaña)</span>
+            </a>
+          </li>
+          {site.contact.phones.map((phone) => <li><a href={telHref(phone)}>{phone}</a></li>)}
+          <li><a href={`mailto:${site.contact.email}`}>{site.contact.email}</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col--end">
+        <address class="footer-address">
+          <a href={mapsLinks().view} target="_blank" rel="noopener noreferrer" data-track="directions_click" data-track-map-action="view_map">
+            {site.address.street}, {site.address.locality}<span class="sr-only"> (abre Google Maps en una nueva pestaña)</span>
+          </a>
+        </address>
+        <p class="footer-hours">
+          {site.hours.map((h) => <span>{h.label}: {h.opens}–{h.closes}</span>)}
+          <span>{site.closedLabel}</span>
+        </p>
+        <p class="footer-shipping">{site.shipping.message}</p>
+        <a class="footer-top" href="#inicio">Volver arriba</a>
+      </div>
+    </div>
+
+    <p class="footer-copyright">{site.footer.copyright}</p>
   </div>
 </footer>
 
 <style>
+  /* The black rises over the red Contacto on a raked edge - the same
+     angle as the Maxxis band that opened the page. */
   .footer {
-    background: var(--color-bg-inverted);
+    --rake: clamp(2rem, 6vw, 6rem);
+    position: relative;
+    z-index: 1;
+    margin-top: calc(var(--rake) * -1);
+    padding-block: calc(var(--space-9) + var(--rake)) var(--space-6);
+    background: var(--color-black);
     color: var(--color-text-inverted);
-    margin-top: var(--space-9);
+    clip-path: polygon(0 var(--rake), 100% 0, 100% 100%, 0 100%);
   }
 
-  .footer-inner {
-    padding-block: var(--space-7);
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-2);
+  .footer-wordmark {
+    display: grid;
+    font-family: var(--font-display);
+    font-size: clamp(3.75rem, min(0.5rem + 15vw, 22svh), 15rem);
+    font-weight: var(--font-weight-black);
+    font-stretch: var(--font-stretch-condensed);
+    line-height: 0.86;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
   }
 
-  .footer-name {
+  .footer-line--red {
+    color: var(--color-brand);
+  }
+
+  .footer-grid {
+    display: grid;
+    gap: var(--space-7);
+    margin-top: var(--space-8);
+    padding-top: var(--space-6);
+    border-top: 1px solid var(--color-border-inverted);
+  }
+
+  .footer-col ul {
+    list-style: none;
+    display: grid;
+    gap: var(--space-1);
+  }
+
+  .footer-heading {
+    margin-bottom: var(--space-3);
+    font-size: 0.75rem;
     font-weight: var(--font-weight-bold);
-    font-size: var(--font-size-lg);
-    color: var(--color-text-inverted);
+    font-stretch: var(--font-stretch-expanded);
+    color: var(--color-text-inverted-muted);
   }
 
-  .footer-contact a {
-    color: var(--color-text-inverted);
+  .footer-col a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 40px;
+    font-weight: var(--font-weight-semibold);
+    transition: color var(--transition-fast);
+  }
+
+  .footer-col a:hover,
+  .footer-col a:focus-visible {
+    color: var(--color-brand);
+  }
+
+  .footer-col--end {
+    display: grid;
+    gap: var(--space-4);
+    align-content: start;
+    justify-items: start;
+  }
+
+  .footer-address {
+    font-style: normal;
+  }
+
+  .footer-address a {
+    display: inline-flex;
+    min-height: 40px;
+    align-items: center;
+    font-weight: var(--font-weight-semibold);
+    transition: color var(--transition-fast);
+  }
+
+  .footer-address a:hover,
+  .footer-address a:focus-visible {
+    color: var(--color-brand);
+  }
+
+  .footer-hours {
+    display: grid;
+    gap: var(--space-1);
+    font-size: var(--font-size-sm);
+    color: var(--color-text-inverted-muted);
+  }
+
+  .footer-shipping {
+    font-weight: var(--font-weight-bold);
+    font-stretch: var(--font-stretch-expanded);
+  }
+
+  .footer-top {
     text-decoration: underline;
-    text-underline-offset: 3px;
+    text-decoration-color: var(--color-brand);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 6px;
+  }
+
+  .footer-copyright {
+    margin-top: var(--space-8);
+    font-size: var(--font-size-sm);
+    color: var(--color-text-inverted-muted);
+  }
+
+  @media (min-width: 768px) {
+    .footer-grid {
+      grid-template-columns: 1fr 1fr 1fr;
+    }
+
+    .footer-col--end {
+      justify-items: end;
+      text-align: right;
+    }
   }
 </style>

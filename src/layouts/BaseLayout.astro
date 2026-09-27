@@ -4,80 +4,152 @@
 // ============================================================================
 // The shared page shell. Every page in src/pages/ wraps its content in
 // this layout, which is responsible for:
-//   - the <head> (title, meta description, fonts, global stylesheet)
-//   - the parts that appear on every page: Navbar, free-shipping banner,
-//     footer, floating WhatsApp button
-// A page only needs to provide a title/description and its own content
-// via the default <slot />.
+//   - the <head>: title, description, canonical, robots, social cards,
+//     favicons, LocalBusiness structured data, fonts, global stylesheet
+//   - the parts that appear on every page: Navbar, footer, floating
+//     WhatsApp button (the free-shipping message now lives in the hero)
+//   - the html.motion-ok flag that animated components key their
+//     initial (pre-animation) states off - see the inline script below
 //
-// Props:
-//   title       - page-specific <title>, shown in the browser tab/search
-//                 results (required, and should be different per page).
-//   description - page-specific meta description (required for SEO -
-//                 the old site only had this on the homepage).
-//   ogImage     - optional absolute-path image for social share previews
-//                 (defaults to the workshop photo - a real, existing photo,
-//                 not a placeholder).
+// Props (all optional - the homepage uses the defaults from site.seo):
+//   title       - <title> and social title
+//   description - meta + social description
+//
+// Social image: public/og/neumaticos-osorno.jpg, a branded graphic built
+// from approved assets (scripts/brand/). Deliberately NOT the workshop
+// image, which is AI-generated and must not be presented as the shop.
+//
+// Analytics: only active when PUBLIC_GA_MEASUREMENT_ID is set (see
+// .env.example and src/scripts/analytics.js); otherwise nothing loads.
 // ============================================================================
 import Navbar from "../components/Navbar.astro";
 import Footer from "../components/Footer.astro";
-import FreeShippingBanner from "../components/FreeShippingBanner.astro";
 import WhatsAppButton from "../components/WhatsAppButton.astro";
-import { site } from "../data/site.js";
+import { getImage } from "astro:assets";
+import { site, mapsLinks } from "../data/site.js";
+import { media } from "../data/media.js";
 import "../styles/global.css";
 
 interface Props {
-  title: string;
-  description: string;
-  ogImage?: string;
+  title?: string;
+  description?: string;
 }
 
-const { title, description, ogImage = "/images/workshop-hero.png" } = Astro.props;
-const canonicalUrl = new URL(Astro.url.pathname, Astro.site);
+const { title = site.seo.title, description = site.seo.description } = Astro.props;
+// "/index.html" and "/" are the same page; always point at "/".
+const canonicalUrl = new URL(Astro.url.pathname.replace(/index\.html$/, ""), Astro.site);
+const ogImageUrl = new URL(site.seo.ogImage, Astro.site);
+const logoFile = await getImage({ src: media.logo.src, width: 600, format: "png" });
 
-// Minimal, honest structured data: only fields we actually have real
-// values for (name/url/phone/email). No street address or opening hours
-// are listed here because that information isn't present anywhere on the
-// current live site - see the [CONTENT SUGGESTION] note in the project
-// report rather than guessing at it.
+// Google Analytics 4 Measurement ID ("G-XXXXXXXXXX") from the build
+// environment. Anything that isn't a well-formed ID disables analytics.
+const rawGaId = import.meta.env.PUBLIC_GA_MEASUREMENT_ID ?? "";
+const gaId = /^G-[A-Z0-9]{4,}$/.test(rawGaId) ? rawGaId : undefined;
+
+// LocalBusiness structured data (Schema.org TireShop). Only confirmed facts
+// that are also VISIBLE on the page (Contacto + footer): no geo
+// coordinates, ratings, reviews, price range or social profiles - add
+// sameAs only once official profiles are confirmed.
 const structuredData = {
   "@context": "https://schema.org",
-  "@type": "AutoPartsStore",
+  "@type": "TireShop",
+  "@id": new URL("/#negocio", Astro.site).href,
   name: site.name,
-  url: site.domain,
+  url: new URL("/", Astro.site).href,
+  logo: new URL(logoFile.src, Astro.site).href,
+  image: ogImageUrl.href,
   telephone: site.contact.phones[0],
   email: site.contact.email,
+  address: {
+    "@type": "PostalAddress",
+    streetAddress: site.address.street,
+    postalCode: site.address.postalCode,
+    addressLocality: site.address.locality,
+    addressRegion: site.address.region,
+    addressCountry: site.address.countryCode,
+  },
+  openingHoursSpecification: site.hours.map((h) => ({
+    "@type": "OpeningHoursSpecification",
+    dayOfWeek: h.schemaDays,
+    opens: h.opens,
+    closes: h.closes,
+  })),
+  contactPoint: {
+    "@type": "ContactPoint",
+    contactType: "customer service",
+    telephone: site.contact.whatsappPhone,
+    availableLanguage: "es",
+  },
+  hasMap: mapsLinks().view,
 };
 ---
 
 <!doctype html>
-<html lang="es">
+<html lang="es-CL" data-ga-id={gaId}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{title}</title>
     <meta name="description" content={description} />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <meta name="theme-color" content="#16181c" />
+    <!-- Carried over from the live index.html (Search Console ownership). -->
+    <meta name="google-site-verification" content="JqSEK9LBg_wztxruFbG3S2MrNLNfLRs9wMZxPKNfdAs" />
+
+    <!-- Favicons: generated from the official logo (scripts/brand/). -->
+    <link rel="icon" href="/favicon.ico" sizes="48x48" />
+    <link rel="icon" href="/favicon-32x32.png" type="image/png" sizes="32x32" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+
+    <!--
+      html.js: JS is running (components may hide things JS will reveal).
+      html.motion-ok: set before first paint so animated elements can start
+      hidden without a flash. Only set when the visitor allows motion.
+      Fail-safe: if the intro hasn't started 2.5s later (JS failed to load
+      or errored), drop the flag so all content shows in its final state.
+    -->
+    <script is:inline>
+      (function () {
+        var root = document.documentElement;
+        root.classList.add("js");
+        if (!window.matchMedia("(prefers-reduced-motion: no-preference)").matches) return;
+        root.classList.add("motion-ok");
+        setTimeout(function () {
+          if (!root.classList.contains("intro-started")) root.classList.remove("motion-ok");
+        }, 2500);
+      })();
+    </script>
     <link rel="canonical" href={canonicalUrl} />
 
     <meta property="og:type" content="website" />
+    <meta property="og:locale" content={site.seo.locale} />
     <meta property="og:site_name" content={site.name} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonicalUrl} />
-    <meta property="og:image" content={new URL(ogImage, Astro.site)} />
+    <meta property="og:image" content={ogImageUrl} />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={site.seo.ogImageAlt} />
     <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImageUrl} />
+    <meta name="twitter:image:alt" content={site.seo.ogImageAlt} />
 
     <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
 
     <!--
-      Using the Google Fonts CDN for now, same as the current live site.
-      Self-hosting Inter (to shave off this external request) is a planned
-      follow-up performance improvement, not part of this foundation.
+      Archivo (variable: weight + width axes) from the Google Fonts CDN,
+      same delivery as the live site. Self-hosting needs the font file (see
+      the Phase 3A report) - planned performance follow-up.
     -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&display=swap"
       rel="stylesheet"
     />
   </head>
@@ -86,7 +158,6 @@ const structuredData = {
     <a href="#main-content" class="skip-link">Saltar al contenido</a>
 
     <Navbar />
-    <FreeShippingBanner />
 
     <main id="main-content">
       <slot />
@@ -97,7 +168,9 @@ const structuredData = {
 
     <script>
       import { initScrollReveal } from "../scripts/scrollReveal.js";
+      import { initAnalytics } from "../scripts/analytics.js";
       initScrollReveal();
+      initAnalytics();
     </script>
   </body>
 </html>

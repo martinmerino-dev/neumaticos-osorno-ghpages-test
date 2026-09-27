@@ -36,7 +36,16 @@
    this is the correct, non-hacky way to say the same thing.) */
 html {
   color-scheme: light;
-  scroll-behavior: smooth;
+  /* Anchor jumps (the whole single-page nav) land below the fixed navbar. */
+  scroll-padding-top: var(--nav-height);
+}
+
+/* Native smooth scrolling for in-page anchors - only when the visitor
+   hasn't asked for reduced motion. No JS scroll library, no hijacking. */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
 }
 
 /* 3. BODY
@@ -66,9 +75,11 @@ h1,
 h2,
 h3,
 h4 {
+  font-family: var(--font-display);
   font-weight: var(--font-weight-bold);
+  font-stretch: var(--font-stretch-semi);
   line-height: var(--line-height-tight);
-  letter-spacing: -0.02em;
+  letter-spacing: -0.01em;
   color: var(--color-ink);
 }
 

@@ -1,0 +1,49 @@
+---
+// ============================================================================
+// SplitWords
+// ============================================================================
+// Renders a piece of text as word-by-word line masks, split at build time,
+// for the `data-reveal-words` entrance in src/scripts/scrollReveal.js.
+// Put `data-reveal-words` on the element that wraps this component.
+//
+// The words stay real, readable text separated by real spaces, so screen
+// readers, search engines and no-JS visitors get the sentence as normal.
+//
+// Props:
+//   text - the sentence to split
+// ============================================================================
+interface Props {
+  text: string;
+}
+
+const words = Astro.props.text.split(/\s+/).filter(Boolean);
+---
+
+{
+  words.map((word, index) => (
+    <>
+      <span class="word-mask">
+        <span class="word" data-word>
+          {word}
+        </span>
+      </span>
+      {index < words.length - 1 && " "}
+    </>
+  ))
+}
+
+<style>
+  /* The padding/negative margin give accents and descenders room inside
+     the mask without changing the line's spacing. */
+  .word-mask {
+    display: inline-block;
+    overflow: hidden;
+    vertical-align: top;
+    padding-block: 0.1em;
+    margin-block: -0.1em;
+  }
+
+  .word {
+    display: inline-block;
+  }
+</style>

@@ -2,172 +2,482 @@
 // ============================================================================
 // Navbar
 // ============================================================================
-// Sticky top navigation with the logo, the main nav links, and a hamburger
-// toggle for small screens. Appears once per page via BaseLayout.astro, so
-// this file is the ONLY place navbar markup/styling lives (the old site
-// duplicated this exact block by hand in all 5 HTML files).
+// Fixed single-page navigation: logo plate, section anchors, WhatsApp CTA
+// and (below 1024px) a full-screen menu.
 //
-// Props: none - the link list and active-page logic are fully data-driven
-// from src/data/site.js, so adding/renaming a page only requires editing
-// that one file.
+// States (all visual changes are pure CSS, driven by attributes/classes
+// that small scripts flip):
+//   - over the hero: transparent bar, white links; the logo sits on its
+//     own white "plate" (the logo file has an opaque white background and
+//     a black wordmark, so it always needs a light surface).
+//   - .is-scrolled (navbarScroll.js): the bar fills in white from behind
+//     the plate, compacts, and links turn ink.
+//   - aria-current="true" (sectionNav.js): the link for the section in
+//     view; a single red bar slides beneath it.
+//   - [data-menu-open] (nav.js): mobile menu open.
+//
+// The link list is rendered once and styled as either the desktop row or
+// the mobile full-screen panel - no duplicated markup.
 // ============================================================================
+import { Image } from "astro:assets";
 import { site } from "../data/site.js";
-
-// Astro.url.pathname is the current page's path (e.g. "/maxxis.html").
-// We use it to mark the matching nav link as active, the same way the old
-// site manually added class="active" to one <a> per page.
-const currentPath = Astro.url.pathname;
+import { media } from "../data/media.js";
 ---
 
-<nav class="navbar" data-navbar>
-  <div class="navbar-inner container">
-    <a href="/" class="brand">
-      <img src="/images/logo.jpg" alt={site.name} class="brand-logo" />
+<header class="navbar" data-navbar>
+  <div class="navbar-inner">
+    <a href="#inicio" class="brand" data-nav-intro>
+      <Image
+        src={media.logo.src}
+        alt={site.name}
+        width={250}
+        widths={[220, 250, 440, 500]}
+        sizes="(min-width: 1024px) 250px, 206px"
+        class="brand-logo"
+        loading="eager"
+      />
+    </a>
+
+    <nav class="nav" aria-label="Principal">
+      <div class="nav-panel" id="nav-panel" data-nav-panel>
+        <ul class="nav-links" data-nav-links>
+          {
+            site.nav.map((item, index) => (
+              <li style={`--i: ${index}`}>
+                <a href={item.href} class="nav-link" data-nav-intro>
+                  {item.label}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+        <span class="nav-indicator" data-nav-indicator aria-hidden="true"></span>
+
+        <div class="nav-panel-contact">
+          <a href={site.contact.whatsappUrl} target="_blank" rel="noopener noreferrer" class="nav-panel-whatsapp">
+            Escríbenos por WhatsApp<span class="sr-only"> (abre en una nueva pestaña)</span>
+          </a>
+          {site.contact.phones.map((phone) => <a href={`tel:${phone.replace(/\s/g, "")}`}>{phone}</a>)}
+          <a href={`mailto:${site.contact.email}`}>{site.contact.email}</a>
+        </div>
+      </div>
+    </nav>
+
+    <a
+      class="nav-cta"
+      href={site.contact.whatsappUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+      data-nav-intro
+    >
+      <img src="/icons/whatsapp.svg" alt="" width="18" height="18" />
+      <span class="nav-cta-label">WhatsApp</span>
+      <span class="sr-only"> (abre en una nueva pestaña)</span>
     </a>
 
     <button
       type="button"
       class="nav-toggle"
       data-nav-toggle
+      data-nav-intro
       aria-expanded="false"
-      aria-controls="primary-nav"
-      aria-label="Abrir menú de navegación"
+      aria-controls="nav-panel"
+      aria-label="Abrir menú"
     >
       <span class="nav-toggle-bar"></span>
       <span class="nav-toggle-bar"></span>
-      <span class="nav-toggle-bar"></span>
     </button>
-
-    <ul class="nav-links" id="primary-nav" data-nav-links>
-      {
-        site.nav.map((item) => (
-          <li>
-            <a href={item.href} aria-current={currentPath === item.href ? "page" : undefined}>
-              {item.label}
-            </a>
-          </li>
-        ))
-      }
-    </ul>
   </div>
-</nav>
+
+  <span class="nav-progress" data-nav-progress aria-hidden="true"></span>
+</header>
 
 <script>
   import { initNav } from "../scripts/nav.js";
   import { initNavbarScroll } from "../scripts/navbarScroll.js";
+  import { initSectionNav } from "../scripts/sectionNav.js";
   initNav();
   initNavbarScroll();
+  initSectionNav();
 </script>
 
 <style>
   .navbar {
-    position: sticky;
-    top: 0;
+    position: fixed;
+    inset: 0 0 auto 0;
     z-index: 100;
-    background: var(--color-surface);
-    box-shadow: var(--shadow-sm);
-    transition: box-shadow var(--transition-base);
+    color: var(--color-text-inverted);
   }
 
-  /* Subtle "the interface knows where you are" cue: once the visitor has
-     scrolled past the hero, the bar compacts a little and its shadow
-     deepens - see navbarScroll.js for the class toggle. */
+  /* The white bar that fills in on scroll. A separate layer so it can
+     slide/fade in with transform + opacity only. */
+  .navbar::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: var(--color-white);
+    box-shadow: 0 1px 0 var(--color-mist);
+    transform: translateY(-100%);
+    transition: transform var(--transition-slow);
+  }
+
+  .navbar.is-scrolled::before {
+    transform: translateY(0);
+  }
+
   .navbar.is-scrolled {
-    box-shadow: var(--shadow-md);
+    color: var(--color-text);
   }
 
   .navbar-inner {
+    position: relative;
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    padding-block: var(--space-3);
-    transition: padding-block var(--transition-base);
+    gap: var(--space-5);
+    height: var(--nav-height);
+    padding-right: var(--container-padding);
   }
 
-  .navbar.is-scrolled .navbar-inner {
-    padding-block: var(--space-2);
+  /* Logo plate: flush to the left edge, with a raked right side - a
+     livery/number-plate shape rather than a generic rounded pill. */
+  .brand {
+    display: flex;
+    align-items: center;
+    align-self: stretch;
+    padding: 0 var(--space-7) 0 var(--container-padding);
+    background: var(--color-white);
+    clip-path: polygon(0 0, 100% 0, calc(100% - 1.5rem) 100%, 0 100%);
+    margin-right: auto;
   }
 
+  /* The logo file keeps its natural white margins (~90% of the width is
+     artwork), so 250px here shows ~226px of artwork. flex-shrink: 0
+     stops the flex row from squeezing it on narrow screens. */
   .brand-logo {
-    height: 44px;
-    width: auto;
-    object-fit: contain;
-    transition: height var(--transition-base);
+    flex-shrink: 0;
+    width: 250px;
+    height: auto;
+    transition: transform var(--transition-base);
+    transform-origin: left center;
   }
 
   .navbar.is-scrolled .brand-logo {
-    height: 34px;
+    transform: scale(0.9);
+  }
+
+  /* ---- Desktop link row ------------------------------------------------ */
+
+  .nav {
+    position: relative;
   }
 
   .nav-links {
     display: flex;
-    align-items: center;
-    gap: var(--space-2);
+    gap: var(--space-1);
     list-style: none;
   }
 
-  .nav-links a {
+  .nav-link {
+    position: relative;
     display: inline-block;
-    padding: var(--space-2) var(--space-4);
-    border-radius: var(--radius-sm);
+    padding: var(--space-3) var(--space-3);
     font-weight: var(--font-weight-semibold);
-    color: var(--color-text);
-    transition: background-color var(--transition-fast), color var(--transition-fast);
+    font-stretch: var(--font-stretch-expanded);
+    font-size: 0.9375rem;
+    letter-spacing: 0.01em;
+    transition: color var(--transition-fast);
   }
 
-  .nav-links a:hover,
-  .nav-links a[aria-current="page"] {
+  /* Hover: a hairline wipes in from the left. The active section gets
+     the solid red indicator instead (see .nav-indicator). */
+  .nav-link::after {
+    content: "";
+    position: absolute;
+    left: var(--space-3);
+    right: var(--space-3);
+    bottom: 6px;
+    height: 1px;
+    background: currentColor;
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform var(--transition-base);
+  }
+
+  .nav-link:hover::after {
+    transform: scaleX(1);
+    transform-origin: left;
+  }
+
+  .nav-link[aria-current="true"]::after {
+    display: none;
+  }
+
+  /* One shared bar: a 1px-wide element moved with translateX and
+     stretched with scaleX to the active link's width (sectionNav.js). */
+  .nav-indicator {
+    position: absolute;
+    left: 0;
+    bottom: 2px;
+    width: 1px;
+    height: 3px;
+    background: var(--color-brand);
+    transform-origin: left center;
+    opacity: 0;
+    transition: transform var(--transition-slow), opacity var(--transition-base);
+    pointer-events: none;
+  }
+
+  .nav-panel-contact {
+    display: none;
+  }
+
+  /* ---- WhatsApp CTA ---------------------------------------------------- */
+
+  .nav-cta {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-height: 44px;
+    padding: 0 var(--space-5);
     background: var(--color-brand);
     color: var(--color-text-inverted);
+    font-weight: var(--font-weight-bold);
+    font-stretch: var(--font-stretch-expanded);
+    font-size: 0.875rem;
+    overflow: hidden;
+    isolation: isolate;
   }
 
-  /* Hamburger button: hidden on desktop, shown on mobile below. */
+  /* Hover: black fills in from the left behind the label. */
+  .nav-cta::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: var(--color-black);
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform var(--transition-base);
+  }
+
+  .nav-cta:hover::before,
+  .nav-cta:focus-visible::before {
+    transform: scaleX(1);
+    transform-origin: left;
+  }
+
+  .nav-cta img {
+    width: 18px;
+    height: 18px;
+    filter: brightness(0) invert(1);
+  }
+
+  /* ---- Mobile toggle --------------------------------------------------- */
+
   .nav-toggle {
     display: none;
-    flex-direction: column;
-    gap: 5px;
+    position: relative;
+    z-index: 2;
+    width: 44px;
+    height: 44px;
     background: none;
     border: none;
-    padding: var(--space-2);
+    color: inherit;
   }
 
   .nav-toggle-bar {
-    width: 24px;
+    position: absolute;
+    left: 10px;
+    right: 10px;
     height: 2px;
-    background: var(--color-ink);
-    border-radius: var(--radius-full);
-    transition: transform var(--transition-fast);
+    background: currentColor;
+    transition: transform var(--transition-base);
   }
 
-  @media (max-width: 768px) {
+  .nav-toggle-bar:first-child {
+    transform: translateY(-4px);
+  }
+
+  .nav-toggle-bar:last-child {
+    transform: translateY(4px);
+  }
+
+  .navbar[data-menu-open] .nav-toggle-bar:first-child {
+    transform: rotate(45deg);
+  }
+
+  .navbar[data-menu-open] .nav-toggle-bar:last-child {
+    transform: rotate(-45deg);
+  }
+
+  /* ---- Scroll progress ------------------------------------------------- */
+
+  .nav-progress {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 2px;
+    background: var(--color-brand);
+    transform: scaleX(0);
+    transform-origin: left center;
+    opacity: 0;
+    transition: opacity var(--transition-base);
+  }
+
+  .navbar.is-scrolled .nav-progress {
+    opacity: 1;
+  }
+
+  /* ---- Below desktop: full-screen menu --------------------------------- */
+
+  @media (max-width: 1023px) {
+    .brand {
+      padding-right: var(--space-6);
+    }
+
+    /* Tighter gaps on small screens (one of them sits beside the
+       zero-width <nav> that holds the full-screen menu). */
+    .navbar-inner {
+      gap: var(--space-3);
+    }
+
+    /* Exactly the room left beside the two 44px buttons: viewport minus
+       right padding, gaps, buttons and the plate's own padding. */
+    .brand-logo {
+      width: min(206px, calc(100vw - 190px));
+    }
+
+    /* Touch targets never shrink below 44px. */
+    .nav-cta,
     .nav-toggle {
+      flex-shrink: 0;
+    }
+
+    .nav-cta {
+      padding: 0;
+      width: 44px;
+      justify-content: center;
+    }
+
+    .nav-cta-label {
+      display: none;
+    }
+
+    .nav-toggle {
+      display: block;
+    }
+
+    .nav-indicator {
+      display: none;
+    }
+
+    .nav-panel {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
       display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: calc(var(--nav-height) + var(--space-7)) var(--container-padding) var(--space-7);
+      background: var(--color-ink);
+      color: var(--color-text-inverted);
+      clip-path: inset(0 0 100% 0);
+      visibility: hidden;
+      transition: clip-path var(--duration-slow) var(--ease-in-out),
+        visibility 0s linear var(--duration-slow);
+    }
+
+    .navbar[data-menu-open] .nav-panel {
+      clip-path: inset(0 0 0 0);
+      visibility: visible;
+      transition: clip-path var(--duration-slow) var(--ease-in-out), visibility 0s;
     }
 
     .nav-links {
-      display: none;
-      position: absolute;
-      inset-inline: 0;
-      top: 100%;
       flex-direction: column;
-      align-items: stretch;
       gap: 0;
-      background: var(--color-surface);
-      box-shadow: var(--shadow-md);
-      padding: var(--space-3);
     }
 
-    .nav-links.is-open {
+    .nav-links li {
+      border-bottom: 1px solid var(--color-border-inverted);
+      opacity: 0;
+      transform: translateY(1.5rem);
+      transition: opacity var(--transition-base), transform var(--transition-slow);
+    }
+
+    .navbar[data-menu-open] .nav-links li {
+      opacity: 1;
+      transform: none;
+      transition-delay: calc(200ms + var(--i) * 60ms);
+    }
+
+    .nav-link {
+      display: block;
+      padding: var(--space-4) 0;
+      font-family: var(--font-display);
+      font-size: clamp(2.25rem, 1.5rem + 5vw, 3.5rem);
+      font-weight: var(--font-weight-black);
+      font-stretch: var(--font-stretch-condensed);
+      line-height: 1;
+      letter-spacing: 0;
+    }
+
+    .nav-link::after {
+      display: none;
+    }
+
+    .nav-link[aria-current="true"] {
+      color: var(--color-brand);
+    }
+
+    .nav-panel-contact {
       display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+      color: var(--color-text-inverted-muted);
     }
 
-    .nav-links a {
-      text-align: center;
-      padding: var(--space-3);
+    .nav-panel-contact a {
+      padding-block: var(--space-1);
     }
 
-    .navbar-inner {
-      position: relative;
+    .nav-panel-whatsapp {
+      margin-bottom: var(--space-3);
+      color: var(--color-text-inverted);
+      font-weight: var(--font-weight-bold);
+      font-stretch: var(--font-stretch-expanded);
+      text-decoration: underline;
+      text-decoration-color: var(--color-brand);
+      text-decoration-thickness: 2px;
+      text-underline-offset: 6px;
     }
+
+    /* While the menu is open the toggle sits on the dark panel. */
+    .navbar[data-menu-open] {
+      color: var(--color-text-inverted);
+    }
+
+    .navbar[data-menu-open]::before {
+      transform: translateY(-100%);
+    }
+
+    .navbar[data-menu-open] .nav-progress {
+      opacity: 0;
+    }
+  }
+
+  /* Initial state for the load-in choreography (heroIntro.js). Scoped to
+     html.motion-ok so reduced-motion / no-JS visitors never see it. */
+  :global(html.motion-ok:not(.intro-done)) [data-nav-intro] {
+    opacity: 0;
+  }
+</style>
+
+<style is:global>
+  /* Scroll lock while the mobile menu covers the page. */
+  html.nav-menu-open {
+    overflow: hidden;
   }
 </style>

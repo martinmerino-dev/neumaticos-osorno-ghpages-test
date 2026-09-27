@@ -1,34 +1,77 @@
 // ============================================================================
-// MOBILE NAVIGATION TOGGLE
+// MOBILE NAVIGATION MENU
 // ============================================================================
-// Plain, dependency-free JavaScript that powers the hamburger menu in
-// Navbar.astro. Kept as its own small module (instead of writing it inline
-// in the component) so it's easy to find and easy to unit-test later if
-// needed.
+// Powers the full-screen menu in Navbar.astro on small screens.
+// Progressive enhancement: without JS the links are still plain anchors.
 //
-// Progressive enhancement: the nav links work as plain links with no JS at
-// all. This script only adds the mobile show/hide behaviour on top.
+// Accessibility behaviour:
+//   - aria-expanded on the toggle mirrors the menu state
+//   - opening moves focus to the first link; Tab/Shift+Tab stay inside
+//     the toggle + menu while it's open
+//   - Escape closes and returns focus to the toggle
+//   - choosing a link closes the menu, then the browser's native anchor
+//     scroll takes over
 // ============================================================================
+
+const DESKTOP_QUERY = window.matchMedia("(min-width: 1024px)");
 
 export function initNav() {
+  const navbar = document.querySelector("[data-navbar]");
   const toggle = document.querySelector("[data-nav-toggle]");
-  const links = document.querySelector("[data-nav-links]");
+  const panel = document.querySelector("[data-nav-panel]");
+  if (!navbar || !toggle || !panel) return;
 
-  if (!toggle || !links) return;
+  const focusables = () => [toggle, ...panel.querySelectorAll("a[href]")];
 
-  toggle.addEventListener("click", () => {
-    const isOpen = links.classList.toggle("is-open");
-    // aria-expanded tells screen readers whether the menu is currently
-    // open - the old site's hamburger button was missing this entirely.
+  function setOpen(isOpen, { returnFocus = false } = {}) {
+    navbar.toggleAttribute("data-menu-open", isOpen);
+    document.documentElement.classList.toggle("nav-menu-open", isOpen);
     toggle.setAttribute("aria-expanded", String(isOpen));
+    toggle.setAttribute("aria-label", isOpen ? "Cerrar menú" : "Abrir menú");
+
+    if (isOpen) {
+      panel.querySelector("a[href]")?.focus();
+    } else if (returnFocus) {
+      toggle.focus();
+    }
+  }
+
+  const isOpen = () => navbar.hasAttribute("data-menu-open");
+
+  toggle.addEventListener("click", () => setOpen(!isOpen()));
+
+  panel.querySelectorAll("a[href]").forEach((link) => {
+    link.addEventListener("click", () => {
+      if (isOpen()) setOpen(false);
+    });
   });
 
-  // Close the mobile menu automatically after a link is tapped, so users
-  // don't have to open/close the menu manually between page visits.
-  links.querySelectorAll("a").forEach((link) => {
-    link.addEventListener("click", () => {
-      links.classList.remove("is-open");
-      toggle.setAttribute("aria-expanded", "false");
-    });
+  document.addEventListener("keydown", (event) => {
+    if (!isOpen()) return;
+
+    if (event.key === "Escape") {
+      setOpen(false, { returnFocus: true });
+      return;
+    }
+
+    if (event.key === "Tab") {
+      const items = focusables();
+      const first = items[0];
+      const last = items[items.length - 1];
+
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    }
+  });
+
+  // Rotating a phone/tablet into desktop width with the menu open would
+  // otherwise leave the page scroll-locked.
+  DESKTOP_QUERY.addEventListener("change", (event) => {
+    if (event.matches && isOpen()) setOpen(false);
   });
 }

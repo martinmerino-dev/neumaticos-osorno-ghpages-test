@@ -1,0 +1,210 @@
+---
+// ============================================================================
+// AboutSection  (#nosotros)
+// ============================================================================
+// The editorial chapter: the live "Quiénes Somos" text, set like a
+// magazine feature. Asymmetric grid, one large opening statement (the
+// first sentence), the rest as body copy, the business's own emblem as
+// the image, the three real highlights set big, and the closing sentence
+// as a pull line.
+//
+// Every word is the live copy from src/data/site.js, split, not
+// rewritten. The image is the brand emblem (globe in a tire) from the
+// business's own logo files - deliberately NOT taller.png, which is still
+// unverified and must not stand in for photography of the shop.
+// TODO(content): a real photo of the team or the shop would be the
+// natural image for this chapter.
+// ============================================================================
+import { Image } from "astro:assets";
+import SplitWords from "../SplitWords.astro";
+import { site } from "../../data/site.js";
+import { media } from "../../data/media.js";
+
+const [opening, rest1, rest2, closing] = site.about.paragraphs;
+// First sentence = the statement; the remainder of that paragraph opens
+// the body copy.
+const [statement, ...openingRest] = opening.split(/(?<=\.)\s+/);
+const body = [openingRest.join(" "), rest1, rest2].filter(Boolean);
+---
+
+<section id="nosotros" class="about" aria-labelledby="nosotros-title">
+  <div class="container about-grid">
+    <h2 id="nosotros-title" class="about-heading" data-reveal>{site.about.heading}</h2>
+
+    <p class="about-statement" data-reveal-words>
+      <SplitWords text={statement} />
+    </p>
+
+    <figure class="about-figure">
+      <div class="about-image" data-reveal-mask>
+        <div class="about-drift" data-drift="y" data-drift-amount="10">
+          <Image
+            src={media.emblem.src}
+            alt="Emblema de Neumáticos Osorno: un globo terráqueo dentro de un neumático"
+            widths={[360, 540, 720]}
+            sizes="(min-width: 1024px) 34vw, 80vw"
+            loading="lazy"
+          />
+        </div>
+      </div>
+    </figure>
+
+    <div class="about-body" data-reveal-group>
+      {body.map((paragraph) => <p>{paragraph}</p>)}
+    </div>
+
+    <ul class="about-highlights" data-reveal-group>
+      {site.about.highlights.map((highlight) => <li>{highlight}</li>)}
+    </ul>
+
+    <p class="about-closing" data-reveal-words>
+      <SplitWords text={closing} />
+    </p>
+  </div>
+</section>
+
+<style>
+  .about {
+    position: relative;
+    z-index: 1;
+    background: var(--color-paper);
+    padding-block: var(--space-9) var(--space-10);
+  }
+
+  .about-grid {
+    display: grid;
+    gap: var(--space-6);
+  }
+
+  .about-heading {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-bold);
+    font-stretch: var(--font-stretch-expanded);
+    letter-spacing: 0;
+    color: var(--color-brand);
+  }
+
+  .about-statement {
+    font-family: var(--font-display);
+    font-size: clamp(2.25rem, min(1.2rem + 3.6vw, 7.5svh), 5.25rem);
+    font-weight: var(--font-weight-black);
+    font-stretch: var(--font-stretch-condensed);
+    line-height: 0.98;
+    letter-spacing: -0.005em;
+    color: var(--color-ink);
+    text-wrap: balance;
+  }
+
+  .about-figure {
+    margin: 0;
+    width: min(72%, 22rem);
+    justify-self: end;
+  }
+
+  /* The emblem file has an opaque white background; multiply lets it sit
+     straight on the paper colour. The mask clips its slow drift. */
+  .about-image {
+    overflow: hidden;
+  }
+
+  /* The drift transform makes this wrapper the layer the image blends
+     inside, so multiply only "sees" this box - it needs the page colour
+     as its own background, or the emblem's white would show. */
+  .about-drift {
+    background: var(--color-paper);
+  }
+
+  .about-image :global(img) {
+    display: block;
+    width: 100%;
+    height: auto;
+    mix-blend-mode: multiply;
+  }
+
+  .about-body {
+    display: grid;
+    gap: var(--space-4);
+    max-width: 38rem;
+    color: var(--color-text-muted);
+    font-size: var(--font-size-lg);
+    line-height: 1.6;
+  }
+
+  .about-highlights {
+    list-style: none;
+    display: grid;
+    gap: var(--space-4);
+  }
+
+  .about-highlights li {
+    padding-top: var(--space-4);
+    border-top: 3px solid var(--color-brand);
+    font-family: var(--font-display);
+    font-size: clamp(1.75rem, 1.2rem + 2vw, 3rem);
+    font-weight: var(--font-weight-black);
+    font-stretch: var(--font-stretch-condensed);
+    line-height: 1;
+    text-transform: uppercase;
+  }
+
+  .about-closing {
+    padding-top: var(--space-6);
+    border-top: 1px solid var(--color-border);
+    font-family: var(--font-display);
+    font-size: clamp(1.75rem, 1rem + 2.6vw, 3.5rem);
+    font-weight: var(--font-weight-bold);
+    font-stretch: var(--font-stretch-semi);
+    line-height: 1.1;
+    color: var(--color-ink);
+    text-wrap: balance;
+  }
+
+  @media (min-width: 640px) {
+    .about-highlights {
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--space-5);
+    }
+  }
+
+  /* Desktop: a 12-column editorial grid. Statement across 8 columns with
+     the emblem beside it; body copy indented under the statement;
+     highlights across the full width; the closing line offset right. */
+  @media (min-width: 1024px) {
+    .about-grid {
+      grid-template-columns: repeat(12, 1fr);
+      column-gap: var(--space-6);
+      row-gap: var(--space-7);
+    }
+
+    .about-heading {
+      grid-column: 1 / -1;
+    }
+
+    .about-statement {
+      grid-column: 1 / span 8;
+      grid-row: 2;
+    }
+
+    .about-figure {
+      width: auto;
+      justify-self: stretch;
+      grid-column: 9 / -1;
+      grid-row: 2 / span 2;
+      align-self: start;
+    }
+
+    .about-body {
+      grid-column: 3 / span 6;
+      grid-row: 3;
+    }
+
+    .about-highlights {
+      grid-column: 1 / -1;
+      margin-top: var(--space-6);
+    }
+
+    .about-closing {
+      grid-column: 4 / -1;
+    }
+  }
+</style>

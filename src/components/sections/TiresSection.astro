@@ -1,0 +1,547 @@
+---
+// ============================================================================
+// TiresSection  (#neumaticos)
+// ============================================================================
+// The Neumáticos chapter. Where Maxxis is one selected model on a stage,
+// this is the whole range - a different rhythm for a different job
+// (browsing several brands). One markup, two layouts:
+//   - below 1024px: a native horizontal product rail (swipe) - described
+//     below
+//   - 1024px and up: a vertical editorial list inside the page width,
+//     photo and text side by side, alternating sides - every model is
+//     found by scrolling down, never sideways
+//
+//   - brand chips = the categories; tapping one jumps the rail to that
+//     brand's first model, and the chip of the model in view is marked
+//     current
+//   - the rail is a plain overflow-x scroller with scroll-snap: swipe on
+//     touch, trackpad/shift-wheel, arrow keys when focused, or the
+//     prev/next buttons. No scroll hijacking, no pinning.
+//   - counter + progress line show where you are in the range
+//
+// Tires are sized by HEIGHT inside identical plates, so every photo's
+// tire reads at the same scale (they all fill 96-100% of their file's
+// height; measured). Nothing is ever enlarged past 1.5x its real pixel
+// size (the 242px Hilo XT1 stays honest - flagged in media.js).
+//
+// All text comes from src/data/products.js. Behaviour: tiresRail.js.
+// ============================================================================
+import { Image } from "astro:assets";
+import SplitWords from "../SplitWords.astro";
+import { neumaticosProducts } from "../../data/products.js";
+import { whatsappMessageUrl } from "../../data/site.js";
+import { productImage, imageSize, lowResolutionProductImages } from "../../data/media.js";
+
+const splitName = (name: string) => {
+  const [brand, ...model] = name.split(" ");
+  return { brand, model: model.join(" ") };
+};
+
+const products = neumaticosProducts.map((product) => ({ ...product, ...splitName(product.name) }));
+const brands = [...new Set(products.map((product) => product.brand))];
+const pad = (n: number) => String(n).padStart(2, "0");
+const showDevFlags = import.meta.env.DEV;
+---
+
+<section id="neumaticos" class="tires" aria-labelledby="neumaticos-title" data-rail>
+  <div class="container tires-head">
+    <h2 id="neumaticos-title" class="tires-title" data-reveal-words>
+      <SplitWords text="Neumáticos" />
+    </h2>
+
+    <div class="tires-meta" data-reveal>
+      <p class="tires-count">{products.length} modelos de {brands.length} marcas</p>
+      <div class="tires-brands" role="group" aria-label="Ir a una marca">
+        {
+          brands.map((brand) => (
+            <button type="button" class="brand-chip" data-rail-brand={brand}>
+              {brand}
+            </button>
+          ))
+        }
+      </div>
+    </div>
+  </div>
+
+  <div
+    class="rail"
+    data-rail-track
+    tabindex="0"
+    role="region"
+    aria-label="Modelos de neumáticos. Desliza o usa las flechas para ver más."
+  >
+    {
+      products.map((product, index) => {
+        const image = productImage(product.image);
+        const size = imageSize(image);
+        return (
+          <article class="slide" data-rail-slide data-brand={product.brand} aria-labelledby={`tire-${product.slug}`}>
+            <div class="plate" data-rail-plate style={`--natural-h: ${size.height}px`}>
+              <span class="plate-brand">{product.brand}</span>
+              <span class="plate-index" aria-hidden="true">
+                {pad(index + 1)}
+              </span>
+              <Image
+                src={image}
+                alt={product.name}
+                widths={[240, 360, 480, 640]}
+                sizes="(min-width: 1024px) 28vw, 78vw"
+                loading="lazy"
+              />
+              {showDevFlags && lowResolutionProductImages.includes(product.image) && (
+                <span class="dev-flag">DEV: imagen de baja resolución ({size.width}px)</span>
+              )}
+            </div>
+
+            <div class="slide-body">
+              <h3 id={`tire-${product.slug}`} class="slide-name">
+                <span class="sr-only">{product.brand} </span>
+                {product.model}
+              </h3>
+              <dl class="slide-specs">
+                <div>
+                  <dt>Tipo</dt>
+                  <dd>{product.type}</dd>
+                </div>
+                <div>
+                  <dt>{product.usageLabel ?? "Uso"}</dt>
+                  <dd>{product.usage}</dd>
+                </div>
+              </dl>
+              <ul class="slide-features">
+                {product.features.map((feature) => <li>{feature}</li>)}
+              </ul>
+              <a
+                class="slide-cta"
+                href={whatsappMessageUrl(`Hola, quiero consultar por el neumático ${product.name}.`)}
+                target="_blank"
+                rel="noopener noreferrer"
+                data-track-model={product.name}
+              >
+                Consultar por WhatsApp
+                <span class="sr-only"> sobre {product.name} (abre en una nueva pestaña)</span>
+              </a>
+            </div>
+          </article>
+        );
+      })
+    }
+  </div>
+
+  <div class="container rail-controls">
+    <p class="rail-counter" aria-hidden="true">
+      <span data-rail-current>01</span> / {pad(products.length)}
+    </p>
+    <div class="rail-progress" aria-hidden="true">
+      <span data-rail-progress></span>
+    </div>
+    <div class="rail-buttons">
+      <button type="button" class="rail-button" data-rail-prev aria-label="Modelo anterior">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>
+      </button>
+      <button type="button" class="rail-button" data-rail-next aria-label="Modelo siguiente">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" /></svg>
+      </button>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { initTiresRail } from "../../scripts/tiresRail.js";
+  initTiresRail();
+</script>
+
+<style>
+  .tires {
+    position: relative;
+    z-index: 1;
+    background: var(--color-white);
+    padding-block: var(--space-9);
+  }
+
+  /* ---- Head ------------------------------------------------------------ */
+
+  .tires-head {
+    display: grid;
+    gap: var(--space-5);
+    margin-bottom: var(--space-7);
+  }
+
+  .tires-title {
+    font-family: var(--font-display);
+    font-size: var(--font-size-chapter);
+    font-weight: var(--font-weight-black);
+    font-stretch: var(--font-stretch-condensed);
+    line-height: 0.85;
+    letter-spacing: -0.01em;
+    text-transform: uppercase;
+  }
+
+  .tires-meta {
+    display: grid;
+    gap: var(--space-4);
+  }
+
+  .tires-count {
+    font-weight: var(--font-weight-semibold);
+    font-stretch: var(--font-stretch-expanded);
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+  }
+
+  .tires-brands {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+
+  .brand-chip {
+    min-height: 44px;
+    padding: 0 var(--space-4);
+    background: transparent;
+    border: 1px solid var(--color-border);
+    color: var(--color-text-muted);
+    font-weight: var(--font-weight-semibold);
+    font-stretch: var(--font-stretch-expanded);
+    font-size: var(--font-size-sm);
+    transition: color var(--transition-fast), border-color var(--transition-fast),
+      background-color var(--transition-fast);
+  }
+
+  .brand-chip:hover {
+    color: var(--color-ink);
+    border-color: var(--color-ink);
+  }
+
+  .brand-chip[aria-current="true"] {
+    background: var(--color-ink);
+    border-color: var(--color-ink);
+    color: var(--color-text-inverted);
+  }
+
+  /* ---- Rail ------------------------------------------------------------ */
+
+  /* Native horizontal scroller. The side padding lines the first slide up
+     with the page container; scroll-padding keeps snapped slides on the
+     same line. */
+  .rail {
+    --rail-gutter: max(var(--container-padding), calc((100vw - var(--container-width)) / 2 + var(--container-padding)));
+    position: relative;
+    display: flex;
+    gap: var(--space-5);
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: var(--rail-gutter);
+    padding: var(--space-2) var(--rail-gutter) var(--space-5);
+    scrollbar-width: none;
+  }
+
+  .rail::-webkit-scrollbar {
+    display: none;
+  }
+
+  .rail:focus-visible {
+    outline-offset: -4px;
+  }
+
+  .slide {
+    flex: 0 0 min(78vw, 400px);
+    scroll-snap-align: start;
+    display: grid;
+    align-content: start;
+    gap: var(--space-5);
+  }
+
+  /* Identical plate for every tire; the photo is sized by height. */
+  .plate {
+    position: relative;
+    display: grid;
+    place-items: center;
+    aspect-ratio: 4 / 5;
+    background: var(--color-paper);
+    overflow: hidden;
+  }
+
+  .plate :global(img) {
+    width: auto;
+    height: 84%;
+    max-width: 90%;
+    max-height: calc(var(--natural-h) * 1.5);
+    object-fit: contain;
+    mix-blend-mode: multiply;
+    transition: transform var(--transition-slow);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .slide:hover .plate :global(img) {
+      transform: scale(1.04);
+    }
+  }
+
+  .plate-brand,
+  .plate-index {
+    position: absolute;
+    top: var(--space-4);
+    font-size: 0.75rem;
+    font-weight: var(--font-weight-bold);
+    font-stretch: var(--font-stretch-expanded);
+  }
+
+  .plate-brand {
+    left: var(--space-4);
+  }
+
+  .plate-index {
+    right: var(--space-4);
+    color: var(--color-text-muted);
+  }
+
+  .dev-flag {
+    position: absolute;
+    left: var(--space-3);
+    bottom: var(--space-3);
+    padding: var(--space-1) var(--space-2);
+    background: #ffd400;
+    color: var(--color-black);
+    font-size: 0.75rem;
+    font-weight: var(--font-weight-bold);
+  }
+
+  /* ---- Slide text ------------------------------------------------------ */
+
+  .slide-body {
+    display: grid;
+    gap: var(--space-4);
+  }
+
+  .slide-name {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 1.4rem + 2vw, 3rem);
+    font-weight: var(--font-weight-black);
+    font-stretch: var(--font-stretch-condensed);
+    line-height: 0.95;
+    text-transform: uppercase;
+  }
+
+  .slide-specs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-4);
+    padding-top: var(--space-4);
+    border-top: 2px solid var(--color-ink);
+  }
+
+  .slide-specs dt {
+    font-size: 0.75rem;
+    font-weight: var(--font-weight-semibold);
+    font-stretch: var(--font-stretch-expanded);
+    color: var(--color-text-muted);
+  }
+
+  .slide-specs dd {
+    margin-top: var(--space-1);
+    font-weight: var(--font-weight-semibold);
+    line-height: 1.35;
+  }
+
+  .slide-features {
+    list-style: none;
+    display: grid;
+    gap: var(--space-2);
+    color: var(--color-text-muted);
+    font-size: 0.9375rem;
+  }
+
+  .slide-features li {
+    display: flex;
+    gap: var(--space-3);
+    line-height: 1.45;
+  }
+
+  .slide-features li::before {
+    content: "";
+    flex-shrink: 0;
+    width: 10px;
+    height: 2px;
+    margin-top: 0.7em;
+    background: var(--color-brand);
+  }
+
+  /* Text-weight CTA (six red blocks in a row would shout): a red rule
+     that thickens on hover/focus. */
+  .slide-cta {
+    justify-self: start;
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    font-weight: var(--font-weight-bold);
+    font-stretch: var(--font-stretch-expanded);
+    font-size: 0.9375rem;
+    text-decoration: underline;
+    text-decoration-color: var(--color-brand);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 6px;
+    transition: text-decoration-thickness var(--transition-fast), color var(--transition-fast);
+  }
+
+  .slide-cta:hover,
+  .slide-cta:focus-visible {
+    color: var(--color-brand);
+    text-decoration-thickness: 4px;
+  }
+
+  /* ---- Controls -------------------------------------------------------- */
+
+  .rail-controls {
+    display: flex;
+    align-items: center;
+    gap: var(--space-5);
+    margin-top: var(--space-5);
+  }
+
+  .rail-counter {
+    font-family: var(--font-display);
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-black);
+    font-stretch: var(--font-stretch-condensed);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .rail-progress {
+    flex: 1;
+    height: 2px;
+    background: var(--color-border);
+  }
+
+  .rail-progress span {
+    display: block;
+    height: 100%;
+    background: var(--color-brand);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform var(--duration-base) linear;
+  }
+
+  .rail-buttons {
+    display: flex;
+    gap: var(--space-2);
+  }
+
+  .rail-button {
+    display: grid;
+    place-items: center;
+    width: 52px;
+    height: 52px;
+    background: var(--color-ink);
+    border: none;
+    color: var(--color-text-inverted);
+    transition: background-color var(--transition-fast);
+  }
+
+  .rail-button:hover:not(:disabled) {
+    background: var(--color-brand);
+  }
+
+  .rail-button:disabled {
+    cursor: default;
+    background: var(--color-mist);
+    color: var(--color-fog);
+  }
+
+  .rail-button svg {
+    width: 22px;
+    height: 22px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+  }
+
+  /* ---- Layout by width ------------------------------------------------- */
+
+  @media (min-width: 768px) {
+    .slide {
+      flex-basis: min(44vw, 420px);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    /* Count on the left, brand chips on the right, under the title. */
+    .tires-meta {
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      padding-top: var(--space-5);
+      border-top: 1px solid var(--color-border);
+    }
+
+    /* Desktop/laptop: no sideways browsing. The range becomes a vertical
+       editorial list inside the page width - each model a wide row, the
+       photo alternating left/right - discovered by scrolling down. */
+    .rail {
+      display: grid;
+      gap: var(--space-8);
+      overflow: visible;
+      scroll-snap-type: none;
+      padding-bottom: 0;
+    }
+
+    .slide {
+      grid-template-columns: minmax(0, 6fr) minmax(0, 5fr);
+      align-items: center;
+      column-gap: var(--space-8);
+      padding-top: var(--space-7);
+      border-top: 1px solid var(--color-border);
+    }
+
+    /* Even rows mirror the whole row (photo right), columns included, so
+       every photo gets the same wide column. */
+    .slide:nth-child(even) {
+      grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+    }
+
+    .slide:nth-child(even) .plate {
+      order: 2;
+    }
+
+    /* Wide plate, capped by the viewport height so a whole row (photo +
+       text) fits one screen, even on a 768px-tall laptop. */
+    .plate {
+      aspect-ratio: 5 / 4;
+      max-height: 68svh;
+    }
+
+    /* Every photo is fitted into the same box inside the plate. The tires
+       all fill 96-100% of their file's height and the box is wider than
+       tall, so every tire renders at the same height. */
+    .plate :global(img) {
+      position: absolute;
+      top: 8%;
+      left: 5%;
+      width: 90%;
+      height: 84%;
+      max-width: none;
+      max-height: none;
+    }
+
+    .slide-name {
+      font-size: clamp(3rem, min(1.5rem + 3vw, 10svh), 5.5rem);
+    }
+
+    .slide-body {
+      gap: var(--space-5);
+      max-width: 34rem;
+    }
+
+    .rail-controls {
+      display: none;
+    }
+  }
+
+  /* Touch-sized screens swipe; the arrows would only crowd the row. */
+  @media (max-width: 767px) {
+    .rail-buttons {
+      display: none;
+    }
+  }
+</style>

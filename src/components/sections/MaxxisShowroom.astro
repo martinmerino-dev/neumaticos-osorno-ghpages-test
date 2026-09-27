@@ -1,0 +1,604 @@
+---
+// ============================================================================
+// MaxxisShowroom
+// ============================================================================
+// The body of the Maxxis section: an interactive model selector.
+//
+// Markup pattern: one list item per model, each with a heading-wrapped
+// <button> (the selector row) followed by its detail panel (image + real
+// specs + WhatsApp CTA). Exactly one model is open at a time, exposed with
+// aria-expanded / aria-controls - the accessible "accordion" pattern, which
+// keeps each model's content right after its button in reading order.
+//
+// Layout is decided by CSS, not duplicated markup:
+//   - desktop (>= 1024px, JS on): rows form a typographic list on the
+//     left; the open panel is positioned into a large white "stage" on the
+//     right.
+//   - below 1024px: the open panel expands inline under its row, with a
+//     full-bleed image.
+//   - no JS: every panel is simply visible under its row - nothing is
+//     ever hidden from a visitor whose script fails.
+//
+// Behaviour lives in src/scripts/maxxisShowroom.js. All text comes from
+// src/data/products.js; nothing here is invented.
+// ============================================================================
+import { Image } from "astro:assets";
+import { site } from "../../data/site.js";
+import { productImage, imageSize, lowResolutionProductImages, productImageFraming } from "../../data/media.js";
+
+interface Product {
+  slug: string;
+  name: string;
+  type: string;
+  usage: string;
+  usageLabel?: string;
+  features: string[];
+  image: string;
+}
+
+interface Props {
+  products: Product[];
+  // Slug of the model open by default - the same tire that drives in
+  // during the hero -> Maxxis transition, so the story continues.
+  defaultSlug: string;
+}
+
+const { products, defaultSlug } = Astro.props;
+
+// "Maxxis AT771 BRAVO" -> "AT771 BRAVO": the brand is already the heading.
+const modelName = (product: Product) => product.name.replace(/^Maxxis\s+/i, "");
+
+// Neutral WhatsApp starter message naming the model the visitor is looking
+// at. It is the visitor's own message template, not a business claim.
+const whatsappFor = (product: Product) =>
+  `${site.contact.whatsappUrl}?text=${encodeURIComponent(`Hola, quiero consultar por el neumático ${product.name}.`)}`;
+
+const showDevFlags = import.meta.env.DEV;
+---
+
+<div class="showroom container" data-showroom>
+  <div class="showroom-head">
+    <p class="showroom-count">{products.length} modelos disponibles</p>
+    <p class="showroom-hint">Toca un modelo para verlo</p>
+  </div>
+
+  <div class="models-wrap">
+    <ol class="models" data-models>
+      {
+        products.map((product) => {
+          const image = productImage(product.image);
+          const size = imageSize(image);
+          const isLowRes = lowResolutionProductImages.includes(product.image);
+          const framing = productImageFraming[product.image];
+          return (
+            <li class="model" data-model data-default={product.slug === defaultSlug ? "" : undefined}>
+              <h3 class="model-heading">
+                <button
+                  type="button"
+                  id={`model-${product.slug}`}
+                  class="model-button"
+                  aria-controls={`model-panel-${product.slug}`}
+                  data-model-button
+                  data-track-model={product.name}
+                >
+                  <span class="model-name-mask">
+                    <span class="model-name" data-model-name>
+                      {modelName(product)}
+                    </span>
+                  </span>
+                  <span class="model-type" data-model-type>
+                    {product.type.split(" ").map((word, index) => (
+                      <>
+                        {index > 0 && " "}
+                        <span class="nowrap">{word}</span>
+                      </>
+                    ))}
+                  </span>
+                </button>
+              </h3>
+
+              <div
+                id={`model-panel-${product.slug}`}
+                class="model-panel"
+                role="region"
+                aria-labelledby={`model-${product.slug}`}
+                data-model-panel
+              >
+                <div class="panel-stage" data-panel-stage>
+                  <p class="panel-ghost" aria-hidden="true">
+                    {[...modelName(product)].map((char) => (
+                      <span class="ghost-char" data-ghost-char>
+                        {char === " " ? " " : char}
+                      </span>
+                    ))}
+                  </p>
+
+                  <div
+                    class:list={["panel-media", { "is-framed": framing }]}
+                    data-panel-media
+                    style={`--natural-w: ${size.width}px; --frame-scale: ${framing?.scale ?? 1}`}
+                  >
+                    <Image
+                      src={image}
+                      alt={product.name}
+                      widths={[320, 480, 640, 800]}
+                      sizes="(min-width: 1024px) 38vw, 92vw"
+                      loading="lazy"
+                    />
+                  </div>
+
+                  {showDevFlags && isLowRes && (
+                    <span class="dev-flag">DEV: imagen de baja resolución ({size.width}px)</span>
+                  )}
+                </div>
+
+                <div class="panel-details">
+                  <dl class="panel-specs" data-panel-detail>
+                    <div>
+                      <dt>Tipo</dt>
+                      <dd>{product.type}</dd>
+                    </div>
+                    <div>
+                      <dt>{product.usageLabel ?? "Uso"}</dt>
+                      <dd>{product.usage}</dd>
+                    </div>
+                  </dl>
+
+                  <ul class="panel-features" data-panel-detail>
+                    {product.features.map((feature) => <li>{feature}</li>)}
+                  </ul>
+
+                  <a
+                    class="panel-cta"
+                    href={whatsappFor(product)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    data-panel-detail
+                    data-track-model={product.name}
+                  >
+                    Consultar por WhatsApp
+                    <span class="sr-only"> sobre {product.name} (abre en una nueva pestaña)</span>
+                  </a>
+                </div>
+              </div>
+            </li>
+          );
+        })
+      }
+    </ol>
+    <span class="models-indicator" data-model-indicator aria-hidden="true"></span>
+  </div>
+</div>
+
+<script>
+  import { initMaxxisShowroom } from "../../scripts/maxxisShowroom.js";
+  initMaxxisShowroom();
+</script>
+
+<style>
+  .showroom {
+    padding-block: var(--space-8) var(--space-9);
+  }
+
+  .showroom-head {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: var(--space-1) var(--space-4);
+    white-space: nowrap;
+    margin-bottom: var(--space-5);
+    font-weight: var(--font-weight-semibold);
+    font-stretch: var(--font-stretch-expanded);
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+  }
+
+  /* The hint only makes sense where rows are tapped to expand. */
+  .showroom-hint {
+    display: none;
+  }
+
+  .models-wrap {
+    position: relative;
+  }
+
+  .models {
+    position: relative;
+    list-style: none;
+    border-top: 2px solid var(--color-ink);
+  }
+
+  .model {
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .model-heading {
+    font: inherit;
+  }
+
+  /* ---- Selector row ---------------------------------------------------- */
+
+  /* Name and type always share one row; on narrow screens the type wraps
+     inside its own right-aligned column, never under the name. */
+  .model-button {
+    position: relative;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-4);
+    width: 100%;
+    min-height: 56px;
+    padding: var(--space-4) 0;
+    background: none;
+    border: none;
+    color: var(--color-text-muted);
+    text-align: left;
+    transition: color var(--transition-base);
+  }
+
+  /* Mask for the entrance (names rise out of it). The hover nudge moves
+     the mask itself, so it never clips the name's last letter. */
+  .model-name-mask {
+    display: block;
+    flex-shrink: 0;
+    overflow: hidden;
+    padding-block: 0.06em;
+    transition: transform var(--transition-base);
+  }
+
+  .model-name {
+    display: block;
+    white-space: nowrap;
+    font-family: var(--font-display);
+    font-size: clamp(1.5rem, 1rem + 1.6vw, 2.75rem);
+    font-weight: var(--font-weight-black);
+    font-stretch: var(--font-stretch-condensed);
+    line-height: 1;
+    text-transform: uppercase;
+  }
+
+  .model-type {
+    min-width: 0;
+    text-align: right;
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+  }
+
+  .nowrap {
+    white-space: nowrap;
+  }
+
+  .model-button[aria-expanded="true"] {
+    color: var(--color-ink);
+  }
+
+  .model-button[aria-expanded="true"] .model-type {
+    color: var(--color-text-muted);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .model-button:hover {
+      color: var(--color-ink);
+    }
+
+    .model-button:hover .model-name-mask {
+      transform: translateX(0.35rem);
+    }
+  }
+
+  /* ---- Panel ----------------------------------------------------------- */
+
+  .model-panel {
+    display: grid;
+    gap: var(--space-5);
+    padding-bottom: var(--space-6);
+  }
+
+  .model-panel[hidden] {
+    display: none;
+  }
+
+  /* White "studio" backdrop. It's white on purpose: several product
+     photos are JPEGs with a white background, and multiply blending makes
+     them sit on it seamlessly. */
+  .panel-stage {
+    position: relative;
+    overflow: hidden;
+    background: var(--color-white);
+    aspect-ratio: 1 / 0.92;
+    margin-inline: calc(var(--container-padding) * -1);
+  }
+
+  .panel-ghost {
+    display: none;
+  }
+
+  /* --img-ref mirrors the <Image> `sizes` attribute: it's the width a
+     reference photo renders at, so every photo is sized from the same
+     base and --frame-scale (src/data/media.js) only corrects how each
+     file is cut. */
+  .panel-media {
+    --img-ref: 92vw;
+    position: absolute;
+    inset: var(--space-5);
+    display: grid;
+    place-items: center;
+  }
+
+  /* Photos are never enlarged past 1.5x their real pixel width, except
+     where a framing correction explicitly overrides it (is-framed). */
+  .panel-media :global(img) {
+    width: calc(min(100%, var(--img-ref)) * var(--frame-scale, 1));
+    height: auto;
+    max-width: min(100%, calc(var(--natural-w) * 1.5));
+    max-height: 100%;
+    mix-blend-mode: multiply;
+  }
+
+  .panel-media.is-framed :global(img) {
+    max-width: none;
+  }
+
+  /* Desktop: 38vw, capped by the viewport height so a short laptop
+     screen (shorter stage) shows the same proportion of the tire as a
+     1440x900 screen does. At 900px+ tall the cap doesn't bite. */
+  @media (min-width: 1024px) {
+    .panel-media {
+      --img-ref: min(38vw, calc(100svh - 22rem));
+    }
+  }
+
+  .dev-flag {
+    position: absolute;
+    left: var(--space-3);
+    bottom: var(--space-3);
+    padding: var(--space-1) var(--space-2);
+    background: #ffd400;
+    color: var(--color-black);
+    font-size: 0.75rem;
+    font-weight: var(--font-weight-bold);
+  }
+
+  .panel-details {
+    display: grid;
+    gap: var(--space-5);
+  }
+
+  .panel-specs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-4);
+  }
+
+  .panel-specs dt {
+    font-size: 0.75rem;
+    font-weight: var(--font-weight-semibold);
+    font-stretch: var(--font-stretch-expanded);
+    color: var(--color-text-muted);
+  }
+
+  .panel-specs dd {
+    margin-top: var(--space-1);
+    font-weight: var(--font-weight-semibold);
+    line-height: 1.35;
+  }
+
+  .panel-features {
+    list-style: none;
+    display: grid;
+    gap: var(--space-2);
+    color: var(--color-text-muted);
+  }
+
+  .panel-features li {
+    display: flex;
+    gap: var(--space-3);
+    line-height: 1.45;
+  }
+
+  .panel-features li::before {
+    content: "";
+    flex-shrink: 0;
+    width: 10px;
+    height: 2px;
+    margin-top: 0.7em;
+    background: var(--color-brand);
+  }
+
+  /* Same fill-wipe language as the hero buttons. */
+  .panel-cta {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    justify-self: start;
+    min-height: 52px;
+    padding: 0 var(--space-6);
+    background: var(--color-brand);
+    color: var(--color-text-inverted);
+    font-weight: var(--font-weight-bold);
+    font-stretch: var(--font-stretch-expanded);
+    font-size: 0.9375rem;
+    overflow: hidden;
+    isolation: isolate;
+  }
+
+  .panel-cta::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: var(--color-black);
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform var(--transition-base);
+  }
+
+  .panel-cta:hover::before,
+  .panel-cta:focus-visible::before {
+    transform: scaleX(1);
+    transform-origin: left;
+  }
+
+  .models-indicator {
+    display: none;
+  }
+
+  /* ---- Below desktop, with JS: tap-to-expand rows ----------------------- */
+
+  @media (max-width: 1023px) {
+    .showroom {
+      padding-top: var(--space-6);
+    }
+
+    :global(html.js) .showroom-hint {
+      display: block;
+    }
+
+    /* Active row: a red bar drawn across the top of the row. */
+    .model-button::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: -1px;
+      height: 3px;
+      background: var(--color-brand);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform var(--transition-slow);
+    }
+
+    .model-button[aria-expanded="true"]::before {
+      transform: scaleX(1);
+    }
+
+    .panel-cta {
+      justify-self: stretch;
+    }
+  }
+
+  @media (min-width: 640px) and (max-width: 1023px) {
+    .panel-stage {
+      aspect-ratio: 16 / 10;
+    }
+
+    .panel-details {
+      grid-template-columns: 1fr 1fr;
+      align-items: start;
+    }
+
+    .panel-cta {
+      grid-column: 1 / -1;
+      justify-self: start;
+    }
+  }
+
+  /* ---- Desktop, with JS: list + stage ---------------------------------- */
+
+  @media (min-width: 1024px) {
+    /* --models-h: the showroom is sized to the screen that shows it
+       (viewport minus the navbar and the "6 modelos" header), so a
+       typical panel - photo, specs and CTA - fits one screen even on a
+       768px-tall laptop.
+       --details-h: the details strip reserved for every model. The photo
+       stage gets the rest, and that stage height is the SAME for every
+       model: a model with longer text (MT 764 BIGHORN) grows its panel
+       downward instead of shrinking its photo. maxxisShowroom.js
+       reserves that extra room below the showroom (--panel-overflow). */
+    :global(html.js) .models-wrap {
+      --models-h: clamp(540px, calc(100svh - var(--nav-height) - 8rem), 760px);
+      --details-h: 12rem;
+      padding-bottom: var(--panel-overflow, 0px);
+    }
+
+    :global(html.js) .models {
+      min-height: var(--models-h);
+      border-top: none;
+    }
+
+    :global(html.js) .model {
+      width: 40%;
+    }
+
+    :global(html.js) .model:first-child {
+      border-top: 2px solid var(--color-ink);
+    }
+
+    :global(html.js) .model-button {
+      padding: var(--space-5) 0 var(--space-5) var(--space-5);
+    }
+
+    /* The open panel fills the right-hand stage. Panels stack there; the
+       script keeps the incoming one above the outgoing one while it wipes
+       in, then hides the old one. */
+    :global(html.js) .model-panel {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 56%;
+      min-height: 100%;
+      grid-template-rows: calc(var(--models-h) - var(--details-h)) minmax(var(--details-h), 1fr);
+      gap: 0;
+      padding: 0;
+      background: var(--color-white);
+    }
+
+    :global(html.js) .panel-stage {
+      aspect-ratio: auto;
+      margin: 0;
+    }
+
+    .panel-ghost {
+      position: absolute;
+      top: var(--space-5);
+      left: var(--space-6);
+      right: var(--space-6);
+      display: block;
+      overflow: hidden;
+      white-space: nowrap;
+      font-family: var(--font-display);
+      font-size: clamp(4rem, 6.5vw, 8rem);
+      font-weight: var(--font-weight-black);
+      font-stretch: var(--font-stretch-condensed);
+      line-height: 0.9;
+      text-transform: uppercase;
+      color: var(--color-mist);
+      pointer-events: none;
+    }
+
+    .ghost-char {
+      display: inline-block;
+    }
+
+    :global(html.js) .panel-media {
+      inset: var(--space-9) var(--space-7) var(--space-5);
+    }
+
+    :global(html.js) .panel-details {
+      grid-template-columns: 1.1fr 1.2fr auto;
+      align-items: end;
+      gap: var(--space-6);
+      padding: var(--space-6);
+      border-top: 1px solid var(--color-border);
+    }
+
+    :global(html.js) .panel-specs {
+      grid-template-columns: 1fr;
+    }
+
+    /* One shared red bar that slides to the open row (transform only). */
+    :global(html.js) .models-indicator {
+      display: block;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 1px;
+      background: var(--color-brand);
+      transform-origin: top;
+      transition: transform var(--transition-slow);
+      pointer-events: none;
+    }
+  }
+</style>

@@ -5,6 +5,12 @@
 // The floating call-to-action that follows the visitor down the page on
 // every page of the site. This is the business's main contact channel, so
 // it stays visually consistent and always in the same place.
+//
+// On a page with a hero, it stays out of the way until the visitor has
+// scrolled past it: the hero and the navbar already show a WhatsApp CTA,
+// and on phones the floating button would otherwise sit on top of the
+// hero's bottom bar. Hidden only when JS runs (html.js), so without JS
+// it's always visible.
 // ============================================================================
 import { site } from "../data/site.js";
 ---
@@ -12,12 +18,31 @@ import { site } from "../data/site.js";
 <a
   href={site.contact.whatsappUrl}
   class="whatsapp-button"
+  data-whatsapp-float
   target="_blank"
   rel="noopener noreferrer"
   aria-label="Escríbenos por WhatsApp"
 >
   <img src="/icons/whatsapp.svg" alt="" />
 </a>
+
+<script>
+  import { ScrollTrigger } from "../scripts/gsapSetup.js";
+
+  const button = document.querySelector("[data-whatsapp-float]");
+  const hero = document.querySelector("[data-hero]");
+
+  if (button && hero) {
+    ScrollTrigger.create({
+      trigger: hero,
+      start: "bottom 70%",
+      onToggle: (self) => button.classList.toggle("is-visible", self.isActive),
+      end: "max",
+    });
+  } else {
+    button?.classList.add("is-visible");
+  }
+</script>
 
 <style>
   .whatsapp-button {
@@ -34,7 +59,18 @@ import { site } from "../data/site.js";
        their logo/button, not a site accent color. */
     border-radius: var(--radius-full);
     box-shadow: var(--shadow-lg);
-    transition: transform var(--transition-base);
+    transition: transform var(--transition-base), opacity var(--transition-base),
+      visibility 0s linear var(--duration-base);
+  }
+
+  :global(html.js) .whatsapp-button:not(.is-visible) {
+    opacity: 0;
+    visibility: hidden;
+    transform: scale(0.6);
+  }
+
+  .whatsapp-button.is-visible {
+    transition: transform var(--transition-base), opacity var(--transition-base), visibility 0s;
   }
 
   .whatsapp-button:hover {

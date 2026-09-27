@@ -1,0 +1,126 @@
+---
+// ============================================================================
+// MaxxisSection  (#maxxis)
+// ============================================================================
+// Two parts:
+//   1. The red band that rises over the hero - the hero -> Maxxis
+//      transition (maxxisIntro.js).
+//   2. MaxxisShowroom - the interactive model selector, opening on the
+//      same tire that drove in with the band.
+//
+// The <h2> IS the giant wordmark: real, readable text (not an image), so
+// the transition's hero element is also the section's accessible heading.
+// Everything shown is derived from src/data/products.js - nothing
+// hand-typed.
+// ============================================================================
+import { Image } from "astro:assets";
+import MaxxisShowroom from "./MaxxisShowroom.astro";
+import { maxxisProducts } from "../../data/products.js";
+import { productImage } from "../../data/media.js";
+
+// The tire that "drives in" during the transition: one of the real
+// product photos (transparent PNG, so it can sit over the red band).
+const heroProduct = maxxisProducts.find((product) => product.slug === "at811-razr") ?? maxxisProducts[0];
+---
+
+<section id="maxxis" class="maxxis" aria-labelledby="maxxis-title">
+  <div class="maxxis-band" data-maxxis-band>
+    <h2 id="maxxis-title" class="maxxis-wordmark" data-maxxis-wordmark>Maxxis</h2>
+
+    <div class="maxxis-tire" data-maxxis-tire>
+      <Image
+        src={productImage(heroProduct.image)}
+        alt=""
+        widths={[360, 560, 720]}
+        sizes="(min-width: 1024px) 36vw, 70vw"
+      />
+    </div>
+  </div>
+
+  <div class="maxxis-body">
+    <MaxxisShowroom products={maxxisProducts} defaultSlug={heroProduct.slug} />
+  </div>
+</section>
+
+<script>
+  import { initMaxxisIntro } from "../../scripts/maxxisIntro.js";
+  initMaxxisIntro();
+</script>
+
+<style>
+  /* Sits above the pinned hero so it can slide over it. No background
+     of its own: the band's raked top edge must show the hero behind it,
+     not a wedge of page colour. */
+  .maxxis {
+    position: relative;
+    z-index: 1;
+  }
+
+  .maxxis-body {
+    background: var(--color-paper);
+  }
+
+  /* ---- The red band ---------------------------------------------------- */
+
+  .maxxis-band {
+    position: relative;
+    display: grid;
+    align-items: center;
+    min-height: min(78svh, 760px);
+    padding-block: calc(var(--nav-height) + var(--space-6)) var(--space-8);
+    background: var(--color-brand);
+    overflow: hidden;
+  }
+
+  /* Deliberately larger than the viewport: it bleeds off both edges and
+     travels sideways on scroll (maxxisIntro.js). */
+  .maxxis-wordmark {
+    position: relative;
+    font-family: var(--font-display);
+    font-size: var(--font-size-mega);
+    font-weight: var(--font-weight-black);
+    font-stretch: var(--font-stretch-condensed);
+    line-height: 0.8;
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
+    color: var(--color-black);
+    white-space: nowrap;
+    padding-left: var(--container-padding);
+  }
+
+  .maxxis-tire {
+    position: absolute;
+    right: max(var(--container-padding), 4vw);
+    bottom: -6%;
+    width: min(36vw, 600px);
+    filter: drop-shadow(0 30px 40px rgba(0, 0, 0, 0.35));
+  }
+
+  .maxxis-tire :global(img) {
+    width: 100%;
+    height: auto;
+  }
+
+  @media (max-width: 1023px) {
+    .maxxis-band {
+      align-items: start;
+      min-height: 0;
+      padding-bottom: 0;
+    }
+
+    /* Below desktop the tire joins the flow under the wordmark instead
+       of overlapping it. */
+    .maxxis-tire {
+      position: relative;
+      right: auto;
+      bottom: auto;
+      width: min(78vw, 420px);
+      margin: var(--space-4) 0 calc(var(--space-7) * -1) auto;
+      margin-right: var(--container-padding);
+    }
+
+    .maxxis-body {
+      padding-top: var(--space-7);
+    }
+  }
+</style>

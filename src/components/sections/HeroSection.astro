@@ -1,0 +1,453 @@
+---
+// ============================================================================
+// HeroSection  (#inicio)
+// ============================================================================
+// Full-bleed opening scene: the workshop backdrop, the business name set
+// huge in condensed display type (mirroring the logo: "Neumáticos" red,
+// "Osorno" in the light counterpart of the logo's black), one line of
+// real copy, the three real service highlights, and the two actions that
+// matter - WhatsApp and the catalogue.
+//
+// The <h1> text is real text for screen readers and no-JS visitors
+// (.sr-only); the per-letter spans are an aria-hidden visual layer that
+// heroIntro.js animates. Letters are split here at build time, so no
+// runtime text splitting and no layout shift.
+//
+// All copy comes from src/data/site.js. The backdrop is flagged as
+// UNVERIFIED in src/data/media.js; in `astro dev` a small on-image label
+// makes that impossible to miss. The label is never built into production.
+// ============================================================================
+import { Picture } from "astro:assets";
+import { site } from "../../data/site.js";
+import { media } from "../../data/media.js";
+
+const { titleLines, lead } = site.hero;
+const showUnverifiedFlag = import.meta.env.DEV && !media.workshop.verified;
+---
+
+<section id="inicio" class="hero" data-hero aria-labelledby="hero-title">
+  <!-- Pinned on desktop instead of the section itself, so #inicio always
+       stays at the top of the page for anchor links (see heroIntro.js). -->
+  <div class="hero-pin" data-hero-pin>
+    <div class="hero-stage" data-hero-stage>
+      <div class="hero-media" data-hero-media>
+        <Picture
+          src={media.workshop.src}
+          formats={["avif", "webp"]}
+          fallbackFormat="jpg"
+          widths={[640, 960, 1280, 1536]}
+          sizes="100vw"
+          alt=""
+          loading="eager"
+          fetchpriority="high"
+          class="hero-img"
+          data-hero-img
+        />
+      </div>
+      <div class="hero-shade" aria-hidden="true"></div>
+      <div class="hero-dim" data-hero-dim aria-hidden="true"></div>
+      <span class="hero-edge" data-hero-edge aria-hidden="true"></span>
+      {showUnverifiedFlag && <span class="dev-flag">DEV: imagen no verificada (taller.png)</span>}
+    </div>
+
+    <!-- Copy + bottom strip. During the desktop hero -> Maxxis transition this
+         layer scrolls away at normal speed while the backdrop stays pinned, so
+         the incoming Maxxis band can never slide over the text. -->
+    <div class="hero-foreground" data-hero-foreground>
+      <div class="hero-content container" data-hero-content>
+        <h1 id="hero-title" class="hero-title">
+          <span class="sr-only">{site.name}</span>
+          {
+            titleLines.map((line, lineIndex) => (
+              <span class="hero-line" data-hero-line={lineIndex} aria-hidden="true">
+                {[...line].map((char) => (
+                  <span class="hero-char" data-hero-char>
+                    {char}
+                  </span>
+                ))}
+              </span>
+            ))
+          }
+        </h1>
+
+        <div class="hero-aside">
+          <div class="hero-copy">
+            <p class="hero-lead" data-hero-fade>{lead}</p>
+
+            <ul class="hero-facts" data-hero-fade>
+              {site.about.highlights.map((highlight) => <li>{highlight}</li>)}
+            </ul>
+          </div>
+
+          <div class="hero-actions" data-hero-fade>
+            <a class="btn btn-primary" href={site.contact.whatsappUrl} target="_blank" rel="noopener noreferrer">
+              Escríbenos por WhatsApp<span class="sr-only"> (abre en una nueva pestaña)</span>
+            </a>
+            <a class="btn btn-ghost" href="#maxxis" data-track="cta_click" data-track-cta="ver_neumaticos">Ver neumáticos</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-bar container" data-hero-fade>
+        <p class="hero-shipping">{site.shipping.message}</p>
+        <a class="hero-next" href="#maxxis">
+          Maxxis
+          <span class="hero-next-line" aria-hidden="true"></span>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { initHero } from "../../scripts/heroIntro.js";
+  initHero();
+</script>
+
+<style>
+  .hero {
+    position: relative;
+    z-index: 0;
+    height: 100svh;
+    min-height: 600px;
+    background: var(--color-ink);
+    color: var(--color-text-inverted);
+  }
+
+  /* The pinned layer carries its own background and clipping: while it's
+     pinned it outlives the section's box, so the section can't clip or
+     paint behind it. */
+  .hero-pin {
+    position: relative;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: var(--color-ink);
+  }
+
+  /* ---- Backdrop layers ------------------------------------------------- */
+
+  .hero-stage {
+    position: absolute;
+    inset: 0;
+    transform-origin: 50% 40%;
+  }
+
+  .hero-media {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+  }
+
+  .hero-media :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 50% 60%;
+    /* Pull the photo's orange walls toward the red/black identity and
+       keep it a backdrop, not the subject. */
+    filter: saturate(0.5) contrast(1.1) brightness(0.8);
+  }
+
+  .hero-shade {
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(to top, rgba(22, 24, 28, 0.96) 0%, rgba(22, 24, 28, 0.6) 38%, rgba(22, 24, 28, 0.15) 72%),
+      linear-gradient(to right, rgba(22, 24, 28, 0.55) 0%, rgba(22, 24, 28, 0) 60%),
+      /* Keeps the white nav links legible over the bright ceiling/windows. */
+      linear-gradient(to bottom, rgba(22, 24, 28, 0.6) 0%, rgba(22, 24, 28, 0) 22%);
+  }
+
+  /* Extra darkness the scroll recede fades in (opacity only). */
+  .hero-dim {
+    position: absolute;
+    inset: 0;
+    background: var(--color-black);
+    opacity: 0;
+  }
+
+  /* Leading edge of the "garage door" reveal. Parked at the bottom;
+     heroIntro.js carries it up the screen with the reveal. */
+  .hero-edge {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 3px;
+    background: var(--color-brand);
+    opacity: 0;
+  }
+
+  .dev-flag {
+    position: absolute;
+    right: var(--space-3);
+    top: calc(var(--nav-height) + var(--space-3));
+    padding: var(--space-1) var(--space-2);
+    background: #ffd400;
+    color: var(--color-black);
+    font-size: 0.75rem;
+    font-weight: var(--font-weight-bold);
+  }
+
+  /* ---- Copy ------------------------------------------------------------ */
+
+  .hero-foreground {
+    position: relative;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .hero-content {
+    position: relative;
+    flex: 1;
+    display: grid;
+    align-content: end;
+    gap: var(--space-6);
+    padding-top: calc(var(--nav-height) + var(--space-6));
+    padding-bottom: var(--space-6);
+  }
+
+  .hero-title {
+    font-family: var(--font-display);
+    font-size: var(--font-size-display);
+    font-weight: var(--font-weight-black);
+    font-stretch: var(--font-stretch-condensed);
+    line-height: var(--line-height-display);
+    letter-spacing: -0.01em;
+    color: var(--color-text-inverted);
+  }
+
+  /* The title runs the full width of the container: "Neumáticos" is the
+     widest line and --font-size-display is tuned so it fits edge to edge
+     in the condensed cut without ever wrapping. */
+
+  /* Each line is its own mask; letters rise out of it. The padding and
+     negative margin give the mask room for the accent on the "á". */
+  .hero-line {
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    padding-top: 0.08em;
+    margin-top: -0.08em;
+  }
+
+  .hero-line[data-hero-line="0"] {
+    color: var(--color-brand);
+  }
+
+  .hero-char {
+    display: inline-block;
+  }
+
+  .hero-aside {
+    display: grid;
+    gap: var(--space-5);
+  }
+
+  .hero-copy {
+    display: grid;
+    gap: var(--space-4);
+    max-width: 32rem;
+  }
+
+  .hero-lead {
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.35;
+  }
+
+  .hero-facts {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-5);
+    color: var(--color-text-inverted-muted);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+  }
+
+  .hero-facts li {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  .hero-facts li::before {
+    content: "";
+    width: 10px;
+    height: 2px;
+    background: var(--color-brand);
+  }
+
+  .hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+  }
+
+  /* ---- Buttons --------------------------------------------------------- */
+
+  .btn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    min-height: 52px;
+    padding: 0 var(--space-6);
+    font-weight: var(--font-weight-bold);
+    font-stretch: var(--font-stretch-expanded);
+    font-size: 0.9375rem;
+    overflow: hidden;
+    isolation: isolate;
+    transition: color var(--transition-base), border-color var(--transition-base);
+  }
+
+  /* Fill wipes in from the left on hover/focus, out to the right. */
+  .btn::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform var(--transition-base);
+  }
+
+  .btn:hover::before,
+  .btn:focus-visible::before {
+    transform: scaleX(1);
+    transform-origin: left;
+  }
+
+  .btn-primary {
+    background: var(--color-brand);
+    color: var(--color-text-inverted);
+  }
+
+  .btn-primary::before {
+    background: var(--color-black);
+  }
+
+  .btn-ghost {
+    color: var(--color-text-inverted);
+    box-shadow: inset 0 0 0 1px var(--color-border-inverted);
+  }
+
+  .btn-ghost::before {
+    background: var(--color-white);
+  }
+
+  .btn-ghost:hover,
+  .btn-ghost:focus-visible {
+    color: var(--color-ink);
+  }
+
+  /* ---- Bottom bar ------------------------------------------------------ */
+
+  .hero-bar {
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-block: var(--space-4);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+    font-stretch: var(--font-stretch-expanded);
+  }
+
+  /* Hairline aligned to the content edges, not the container padding. */
+  .hero-bar::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: var(--container-padding);
+    right: var(--container-padding);
+    height: 1px;
+    background: var(--color-border-inverted);
+  }
+
+  .hero-shipping {
+    color: var(--color-text-inverted);
+  }
+
+  .hero-next {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-3);
+    min-height: 44px;
+  }
+
+  /* Scroll cue: a short line that repeatedly draws downward. Killed by
+     the global reduced-motion rule. */
+  .hero-next-line {
+    width: 1px;
+    height: 28px;
+    background: currentColor;
+    transform-origin: top;
+    animation: hero-cue 2.2s var(--ease-in-out) infinite;
+  }
+
+  @keyframes hero-cue {
+    0% { transform: scaleY(0); transform-origin: top; }
+    45% { transform: scaleY(1); transform-origin: top; }
+    55% { transform: scaleY(1); transform-origin: bottom; }
+    100% { transform: scaleY(0); transform-origin: bottom; }
+  }
+
+  @media (max-width: 599px) {
+    .hero-actions .btn {
+      flex: 1 1 100%;
+      justify-content: center;
+    }
+  }
+
+  /* ---- Desktop composition --------------------------------------------- */
+
+  @media (min-width: 1024px) {
+    .hero-content {
+      gap: var(--space-7);
+      padding-bottom: var(--space-7);
+    }
+
+    /* Copy on the left, actions on the right, both hanging off the
+       baseline of "Osorno". */
+    .hero-aside {
+      grid-template-columns: 1fr auto;
+      align-items: end;
+      column-gap: var(--space-8);
+    }
+  }
+
+  /* Short landscape phones: keep the headline and actions on screen. */
+  @media (max-height: 520px) and (orientation: landscape) {
+    .hero {
+      height: auto;
+      min-height: 100svh;
+    }
+
+    .hero-title {
+      font-size: clamp(3rem, 12vw, 6rem);
+    }
+
+    .hero-facts {
+      display: none;
+    }
+  }
+
+  /* ---- Load-in initial state (heroIntro.js) -----------------------------
+     Only when motion is allowed and JS has flagged it (html.motion-ok).
+     Reduced-motion and no-JS visitors get the final state. */
+  :global(html.motion-ok:not(.intro-done)) .hero-media {
+    clip-path: inset(100% 0 0 0);
+  }
+
+  :global(html.motion-ok:not(.intro-done)) .hero-char {
+    transform: translateY(110%);
+  }
+
+  :global(html.motion-ok:not(.intro-done)) [data-hero-fade] {
+    opacity: 0;
+  }
+</style>

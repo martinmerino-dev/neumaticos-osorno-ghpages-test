@@ -1,0 +1,45 @@
+---
+// ============================================================================
+// LegacyRedirect
+// ============================================================================
+// A tiny standalone page that keeps an old multi-page URL (e.g.
+// /maxxis.html) working now that everything lives on one page. GitHub
+// Pages has no server-side redirects, so this is done in HTML:
+//   - location.replace() for an instant jump (no extra history entry)
+//   - <meta http-equiv="refresh"> for visitors without JS
+//   - a visible link as the last fallback
+//   - canonical -> home page and noindex, so search engines consolidate
+//     on the single page instead of indexing the redirect shells
+//
+// Props:
+//   to    - the destination, e.g. "/#maxxis"
+//   title - shown in the tab for the instant before the redirect
+// ============================================================================
+import { site } from "../data/site.js";
+
+interface Props {
+  to: string;
+  title: string;
+}
+
+const { to, title } = Astro.props;
+const canonical = new URL("/", Astro.site);
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title} - {site.name}</title>
+    <meta name="robots" content="noindex" />
+    <link rel="canonical" href={canonical} />
+    <meta http-equiv="refresh" content={`0; url=${to}`} />
+    <script is:inline define:vars={{ to }}>
+      location.replace(to);
+    </script>
+  </head>
+  <body>
+    <p><a href={to}>Ir a {title}</a></p>
+  </body>
+</html>

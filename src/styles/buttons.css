@@ -1,0 +1,120 @@
+/* ==========================================================================
+   BUTTONS
+   ==========================================================================
+   The site's one call-to-action style: a hard-edged block whose fill
+   wipes in from the left on hover/focus and out to the right. Global
+   because Neumáticos, Agrícolas, Contacto and the footer all share it.
+
+   Named .button (not .btn) on purpose: the hero, navbar and Maxxis
+   showroom still carry their own scoped copies of this same look from
+   Phase 1/2A. Migrating those to this class is a planned cleanup; the
+   different name keeps the two from colliding meanwhile.
+
+   Variants:
+     .button--red           red block, black wipe   (light & dark sections)
+     .button--black         black block, white wipe (on the red Contacto)
+     .button--outline-light white hairline, white wipe (dark sections)
+     .button--outline-dark  ink hairline, ink wipe  (light sections)
+     .button--block         full width
+   ========================================================================== */
+
+.button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  min-height: 52px;
+  padding: 0 var(--space-6);
+  font-weight: var(--font-weight-bold);
+  font-stretch: var(--font-stretch-expanded);
+  font-size: 0.9375rem;
+  line-height: 1.2;
+  text-align: center;
+  border: none;
+  overflow: hidden;
+  isolation: isolate;
+  transition: color var(--transition-base);
+}
+
+.button::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform var(--transition-base);
+}
+
+.button:hover::before,
+.button:focus-visible::before {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+
+.button--red {
+  background: var(--color-brand);
+  color: var(--color-text-inverted);
+}
+
+.button--red::before {
+  background: var(--color-black);
+}
+
+.button--black {
+  background: var(--color-black);
+  color: var(--color-text-inverted);
+}
+
+.button--black::before {
+  background: var(--color-white);
+}
+
+.button--black:hover,
+.button--black:focus-visible {
+  color: var(--color-ink);
+}
+
+.button--outline-light {
+  background: transparent;
+  color: var(--color-text-inverted);
+  box-shadow: inset 0 0 0 1px var(--color-border-inverted);
+}
+
+.button--outline-light::before {
+  background: var(--color-white);
+}
+
+.button--outline-light:hover,
+.button--outline-light:focus-visible {
+  color: var(--color-ink);
+}
+
+.button--outline-dark {
+  background: transparent;
+  color: var(--color-ink);
+  box-shadow: inset 0 0 0 1px var(--color-ink);
+}
+
+.button--outline-dark::before {
+  background: var(--color-ink);
+}
+
+.button--outline-dark:hover,
+.button--outline-dark:focus-visible {
+  color: var(--color-text-inverted);
+}
+
+.button--block {
+  width: 100%;
+}
+
+.button:disabled {
+  cursor: default;
+  opacity: 0.35;
+}
+
+.button:disabled::before {
+  display: none;
+}

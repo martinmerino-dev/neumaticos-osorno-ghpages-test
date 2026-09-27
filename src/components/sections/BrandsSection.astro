@@ -1,0 +1,124 @@
+---
+// ============================================================================
+// BrandsSection
+// ============================================================================
+// An interlude between the Maxxis and Neumáticos chapters: every brand the
+// shop carries, set as a continuous band of big condensed type on black.
+// Names only - the agricultural logos get their proper treatment in
+// AgriculturalSection, and there are no logo files for the on-road brands.
+//
+// The list is derived from src/data/products.js (brand = first word of
+// each product name, plus the agricultural brands), so it can't drift
+// from what's actually for sale.
+//
+// Loop: the list is rendered twice and the track slides by exactly one
+// copy (-50%), so the jump back is invisible. Pure CSS. Hover pauses it.
+// Reduced motion: a static, wrapped list with the duplicate removed.
+// ============================================================================
+import { agriculturalBrands, onRoadBrandNames } from "../../data/products.js";
+
+const brands = [...new Set([...onRoadBrandNames, ...agriculturalBrands.map((brand) => brand.name)])];
+---
+
+<section class="brands" aria-labelledby="brands-title">
+  <h2 id="brands-title" class="sr-only">Marcas con las que trabajamos</h2>
+
+  <ul class="sr-only">
+    {brands.map((brand) => <li>{brand}</li>)}
+  </ul>
+
+  <div class="brands-viewport" aria-hidden="true">
+    <div class="brands-track">
+      {
+        [0, 1].map((copy) => (
+          <div class="brands-group" data-copy={copy}>
+            {brands.map((brand) => (
+              <span class="brand">{brand}</span>
+            ))}
+          </div>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<style>
+  .brands {
+    position: relative;
+    z-index: 1;
+    background: var(--color-black);
+    color: var(--color-text-inverted);
+    padding-block: var(--space-6);
+    overflow: hidden;
+  }
+
+  .brands-viewport {
+    overflow: hidden;
+  }
+
+  .brands-track {
+    display: flex;
+    width: max-content;
+    animation: brands-scroll 40s linear infinite;
+  }
+
+  .brands-track:hover {
+    animation-play-state: paused;
+  }
+
+  .brands-group {
+    display: flex;
+    flex-shrink: 0;
+  }
+
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    font-family: var(--font-display);
+    font-size: clamp(2.25rem, 1.5rem + 3vw, 4.5rem);
+    font-weight: var(--font-weight-black);
+    font-stretch: var(--font-stretch-condensed);
+    line-height: 1;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  /* A short red rake between names - the same angle as the navbar plate
+     and the Maxxis band edge. */
+  .brand::after {
+    content: "";
+    display: inline-block;
+    width: 0.12em;
+    height: 0.7em;
+    margin-inline: 0.45em;
+    background: var(--color-brand);
+    transform: skewX(-18deg);
+  }
+
+  @keyframes brands-scroll {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .brands-track {
+      animation: none;
+      width: auto;
+      padding-inline: var(--container-padding);
+    }
+
+    .brands-group {
+      flex-shrink: 1;
+      flex-wrap: wrap;
+      row-gap: var(--space-2);
+    }
+
+    .brands-group[data-copy="1"] {
+      display: none;
+    }
+  }
+</style>

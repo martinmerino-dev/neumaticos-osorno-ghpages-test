@@ -1,0 +1,9 @@
+# Neumáticos Osorno - https://neumaticososorno.cl
+# Everything is public. The old page URLs (maxxis.html, neumaticos.html,
+# neumaticos_agricolas.html, contacto.html) are redirect pages marked
+# noindex with a canonical to the homepage; they stay crawlable so search
+# engines can see those signals.
+User-agent: *
+Allow: /
+
+Sitemap: https://neumaticososorno.cl/sitemap.xml

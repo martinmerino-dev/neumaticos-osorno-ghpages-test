@@ -1,0 +1,94 @@
+<!doctype html>
+<!--
+  Social share image template (1200x630). Rendered to
+  public/og/neumaticos-osorno.jpg by scripts/brand/generate-og-image.mjs.
+
+  Built only from approved brand material: the official logo, the site's
+  red/black palette and Archivo type, the real address, and a real Maxxis
+  product photo. Deliberately NOT the AI-generated workshop image.
+-->
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&display=block"
+      rel="stylesheet"
+    />
+    <style>
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      html, body { width: 1200px; height: 630px; overflow: hidden; }
+      body {
+        position: relative;
+        background: #16181c;
+        color: #fff;
+        font-family: "Archivo", sans-serif;
+      }
+      /* Red band on the right, raked like the site's Maxxis band. */
+      .band {
+        position: absolute;
+        top: 0; right: 0; bottom: 0;
+        width: 470px;
+        background: #d42828;
+        clip-path: polygon(120px 0, 100% 0, 100% 100%, 0 100%);
+      }
+      .tire {
+        position: absolute;
+        right: 20px;
+        bottom: -40px;
+        width: 520px;
+        filter: drop-shadow(0 30px 40px rgba(0, 0, 0, 0.45));
+      }
+      /* Logo on its white plate, flush left - same shape as the navbar. */
+      .plate {
+        position: absolute;
+        top: 0; left: 0;
+        height: 120px;
+        padding: 0 72px 0 64px;
+        display: flex;
+        align-items: center;
+        background: #fff;
+        clip-path: polygon(0 0, 100% 0, calc(100% - 36px) 100%, 0 100%);
+      }
+      .plate img { width: 360px; height: auto; }
+      .copy {
+        position: absolute;
+        left: 64px;
+        bottom: 64px;
+        width: 640px;
+      }
+      h1 {
+        font-size: 124px;
+        font-weight: 900;
+        font-stretch: 64%;
+        line-height: 0.86;
+        letter-spacing: -0.01em;
+      }
+      h1 .red { color: #d42828; }
+      .lead {
+        margin-top: 26px;
+        font-size: 30px;
+        font-weight: 600;
+        line-height: 1.25;
+      }
+      .address {
+        margin-top: 18px;
+        padding-top: 18px;
+        border-top: 2px solid rgba(255, 255, 255, 0.25);
+        font-size: 22px;
+        font-weight: 600;
+        font-stretch: 112%;
+        color: rgba(255, 255, 255, 0.8);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="band"></div>
+    <img class="tire" src="../../src/assets/products/maxxis-at811-razr.png" alt="" />
+    <div class="plate"><img src="../../src/assets/brand/logo.jpg" alt="Neumáticos Osorno" /></div>
+    <div class="copy">
+      <h1><span class="red">Neumáticos</span><br />Osorno</h1>
+      <p class="lead">Venta e instalación de neumáticos.<br />Maxxis, 4x4 y agrícolas.</p>
+      <p class="address">Av. Juan Mackenna 1917 · Osorno</p>
+    </div>
+  </body>
+</html>

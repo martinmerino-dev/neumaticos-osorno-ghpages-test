@@ -4,17 +4,19 @@
 // This is the single source of truth for every tire the site displays.
 // The old site repeated near-identical <div class="product-card">...</div>
 // markup by hand inside maxxis.html and neumaticos.html. Here, each product
-// is one plain object; the ProductCard/ProductGrid components (see
-// src/components/) turn this data into markup. Adding, editing or removing
+// is one plain object; the section components (MaxxisShowroom,
+// TiresSection, AgriculturalSection, BrandsSection) turn it into markup. Adding, editing or removing
 // a product is now a one-line change in this file instead of editing HTML.
 //
 // All names, types, uses and feature bullet points are copied as-is from
 // the current live pages - no specs or products were invented.
 //
-// image paths are relative to /public/images/products/, matching whatever
-// is copied into that folder. Not every image below has been copied into
-// public/ yet - that happens when the page that uses it is built, and
-// each product's real, optimized photo is added at that point.
+// `image` is a filename in src/assets/products/. Components resolve it
+// with productImage() from src/data/media.js, which runs it through
+// Astro's image optimization (never served raw).
+//
+// `usageLabel` restores the label the live page used for the second fact
+// ("Construcción", "Tracción"). It defaults to "Uso" when absent.
 // ============================================================================
 
 /** @typedef {{
@@ -22,6 +24,7 @@
  *   name: string,
  *   type: string,
  *   usage: string,
+ *   usageLabel?: string,
  *   features: string[],
  *   image: string,
  * }} Product
@@ -44,7 +47,8 @@ export const maxxisProducts = [
     slug: "at811-razr",
     name: "Maxxis AT811 RAZR",
     type: "Off-Road extremo",
-    usage: "Construcción reforzada con Kevlar",
+    usageLabel: "Construcción",
+    usage: "Reforzada con Kevlar",
     features: [
       "Diseñado para barro profundo",
       "Larga durabilidad y resistencia",
@@ -55,7 +59,8 @@ export const maxxisProducts = [
     slug: "trepador-m8060",
     name: "Maxxis TREPADOR M8060",
     type: "Competencia off-road",
-    usage: "Tracción extrema en roca y tierra",
+    usageLabel: "Tracción",
+    usage: "Extrema en roca y tierra",
     features: [
       "Neumático radial de alto rendimiento",
       "Uso recomendado para rallies o trial",
@@ -66,6 +71,7 @@ export const maxxisProducts = [
     slug: "at-980",
     name: "Maxxis AT 980",
     type: "Todo Terreno (A/T)",
+    usageLabel: "Tracción",
     usage: "Mixta (carretera y off-road moderado)",
     features: [
       "Neumático radial con diseño robusto",
@@ -77,16 +83,18 @@ export const maxxisProducts = [
     slug: "at-781",
     name: "Maxxis AT 781",
     type: "Todo Terreno (A/T)",
+    usageLabel: "Tracción",
     usage: "Mixta (carretera y off-road)",
     features: ["Rendimiento equilibrado", "Durabilidad superior"],
-    image: "maxxis-at-781.jpeg",
+    image: "maxxis-at-781.webp",
   },
   {
     slug: "mt-764-bighorn",
     name: "Maxxis MT 764 BIGHORN",
     type: "Mud-Terrain (M/T)",
+    usageLabel: "Tracción",
     usage:
-      "Tracción extrema en barro, roca y terrenos blandos; buen rendimiento en carretera",
+      "Extrema en barro, roca y terrenos blandos; buen rendimiento en carretera",
     features: [
       "Diseño de banda de rodadura agresivo con grandes tacos para máxima tracción fuera de carretera",
       "Ofrece un buen control y estabilidad en superficies mojadas y secas",

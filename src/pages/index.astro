@@ -1,157 +1,31 @@
 ---
 // ============================================================================
-// Home page ("Quiénes Somos")
+// Home page - the single-page site
 // ============================================================================
-// The homepage as a visual story: Hero -> trusted brands -> product
-// categories -> featured products -> about the company -> agricultural
-// line -> final contact CTA -> footer. Every fact below (paragraphs,
-// product names/specs, brand names, phone/email) comes from
-// src/data/site.js and src/data/products.js, which were copied verbatim
-// from the current live pages - nothing on this page is invented copy.
+// Composes the sections in navigation order. Each section owns its own
+// markup, styles and motion; this file only decides the order.
 //
-// Category subtitles ("6 modelos disponibles", the agricultural brand
-// list) are computed from the data arrays themselves below, rather than
-// hand-typed, so they can't drift out of sync with what's actually for
-// sale and can't smuggle in an unverified claim.
+// Chapters, alternating light and dark: hero (photo) -> Maxxis (red band,
+// paper showroom) -> brands (black band) -> Neumáticos (white rail) ->
+// Agrícolas (black, industrial) -> Nosotros (paper, editorial) ->
+// Contacto (red) -> footer (black, closing wordmark).
 // ============================================================================
 import BaseLayout from "../layouts/BaseLayout.astro";
-import Hero from "../components/Hero.astro";
-import TrustBrands from "../components/TrustBrands.astro";
-import CategoryGrid from "../components/CategoryGrid.astro";
-import ProductGrid from "../components/ProductGrid.astro";
-import AgriculturalShowcase from "../components/AgriculturalShowcase.astro";
-import CTASection from "../components/CTASection.astro";
-import { site } from "../data/site.js";
-import { maxxisProducts, neumaticosProducts, agriculturalBrands, onRoadBrandNames } from "../data/products.js";
-
-const [firstParagraph, ...restParagraphs] = site.about.paragraphs;
-
-const featuredProducts = maxxisProducts.slice(0, 3);
-
-// One unified list for the TrustBrands marquee: real logos for the
-// brands we have artwork for, plain names for the rest. Order matters
-// less here than variety - agricultural logos are interleaved with the
-// on-road brand names so the band doesn't read as "all logos, then all
-// text".
-const trustBrands = [
-  ...agriculturalBrands.map((brand) => ({
-    name: brand.name,
-    image: `/images/brands/${brand.image}`,
-  })),
-  ...onRoadBrandNames.map((name) => ({ name })),
-];
-
-const categories = [
-  {
-    title: "Maxxis",
-    subtitle: `${maxxisProducts.length} modelos disponibles`,
-    href: "/maxxis.html",
-    image: "/images/products/maxxis-at811-razr.png",
-  },
-  {
-    title: "Neumáticos",
-    subtitle: `${neumaticosProducts.length} modelos disponibles`,
-    href: "/neumaticos.html",
-    image: "/images/products/roadcruza-ra7000.png",
-  },
-  {
-    title: "Neumáticos Agrícolas",
-    subtitle: `${agriculturalBrands.length} marcas especializadas`,
-    href: "/neumaticos_agricolas.html",
-  },
-];
+import HeroSection from "../components/sections/HeroSection.astro";
+import MaxxisSection from "../components/sections/MaxxisSection.astro";
+import TiresSection from "../components/sections/TiresSection.astro";
+import AboutSection from "../components/sections/AboutSection.astro";
+import BrandsSection from "../components/sections/BrandsSection.astro";
+import AgriculturalSection from "../components/sections/AgriculturalSection.astro";
+import ContactSection from "../components/sections/ContactSection.astro";
 ---
 
-<BaseLayout title={`${site.name} - ${site.about.heading}`} description={site.tagline}>
-  <Hero
-    eyebrow={site.name}
-    title={site.about.heading}
-    subtitle={firstParagraph}
-    image="/images/workshop-hero.png"
-    primaryCta={{ text: "Ver neumáticos", href: "/neumaticos.html" }}
-    secondaryCta={{ text: "Escríbenos por WhatsApp", href: site.contact.whatsappUrl }}
-  />
-
-  <TrustBrands brands={trustBrands} />
-
-  <section class="section">
-    <div class="container">
-      <h2 class="section-heading" data-reveal>Explora por categoría</h2>
-      <CategoryGrid categories={categories} />
-    </div>
-  </section>
-
-  <section class="section">
-    <div class="container">
-      <h2 class="section-heading" data-reveal>Algunos de nuestros neumáticos</h2>
-      <ProductGrid products={featuredProducts} />
-    </div>
-  </section>
-
-  <section class="section">
-    <div class="container about-grid">
-      <div class="about-copy" data-reveal>
-        {restParagraphs.map((paragraph) => <p>{paragraph}</p>)}
-      </div>
-
-      <ul class="about-highlights" data-reveal-group>
-        {site.about.highlights.map((highlight) => <li>{highlight}</li>)}
-      </ul>
-    </div>
-  </section>
-
-  <AgriculturalShowcase brands={agriculturalBrands} href="/neumaticos_agricolas.html" />
-
-  <CTASection
-    heading="¿Tienes dudas sobre qué neumático necesitas?"
-    text="Escríbenos y te asesoramos sin costo."
-    showContactDetails
-  />
+<BaseLayout>
+  <HeroSection />
+  <MaxxisSection />
+  <BrandsSection />
+  <TiresSection />
+  <AgriculturalSection />
+  <AboutSection />
+  <ContactSection />
 </BaseLayout>
-
-<style>
-  .section-heading {
-    text-align: center;
-    margin-bottom: var(--space-6);
-  }
-
-  .about-grid {
-    display: grid;
-    grid-template-columns: 1.3fr 1fr;
-    gap: var(--space-6);
-    align-items: start;
-  }
-
-  .about-copy {
-    background: var(--color-surface);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-sm);
-    padding: var(--space-7);
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-4);
-    color: var(--color-text-muted);
-  }
-
-  .about-highlights {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-3);
-    list-style: none;
-  }
-
-  .about-highlights li {
-    background: var(--color-bg-inverted);
-    color: var(--color-text-inverted);
-    border-radius: var(--radius-md);
-    padding: var(--space-4) var(--space-5);
-    font-weight: var(--font-weight-semibold);
-    border-left: 3px solid var(--color-brand);
-  }
-
-  @media (max-width: 900px) {
-    .about-grid {
-      grid-template-columns: 1fr;
-    }
-  }
-</style>

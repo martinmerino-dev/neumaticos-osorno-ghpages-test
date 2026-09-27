@@ -12,6 +12,7 @@
 
 @import "./tokens.css";
 @import "./base.css";
+@import "./buttons.css";
 
 /* .container: centers content and caps its width, with side padding on
    small screens. Almost every section on the site wraps its content in

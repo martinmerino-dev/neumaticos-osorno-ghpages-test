@@ -8,3 +8,8 @@ dist/
 # Editor/OS noise
 .DS_Store
 Thumbs.db
+
+# Local environment (see .env.example)
+.env
+.env.*
+!.env.example
