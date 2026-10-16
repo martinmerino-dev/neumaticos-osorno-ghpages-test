@@ -28,13 +28,18 @@ export const media = {
   },
 
   // Copy of assets/img/taller.png, the live site's workshop photo.
-  // TODO(content): UNVERIFIED IMAGE. The lettering on the lift column is
-  // garbled, which usually means the image is AI-generated rather than a
-  // photograph of the actual shop. Used as an atmospheric backdrop only,
-  // with an empty alt, until the owner supplies real workshop photography.
+  // CONFIRMED AI-GENERATED (2026-10-16): the owner reviewed it - the
+  // garbled lettering on the lift column was the tell - and explicitly
+  // approved using it anyway, knowing it isn't a photograph of the real
+  // shop, including as brand/social imagery. `verified` stays false
+  // because it genuinely isn't authentic photography; `ownerApproved`
+  // records that using it was a deliberate, informed decision rather than
+  // an oversight. Still shown with an empty alt - it's atmospheric, not a
+  // claim about what the shop looks like.
   workshop: {
     src: workshop,
     verified: false,
+    ownerApproved: true,
   },
 
   // The globe-in-a-tire emblem from the business's own logo files

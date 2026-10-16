@@ -13,16 +13,17 @@
 // heroIntro.js animates. Letters are split here at build time, so no
 // runtime text splitting and no layout shift.
 //
-// All copy comes from src/data/site.js. The backdrop is flagged as
-// UNVERIFIED in src/data/media.js; in `astro dev` a small on-image label
-// makes that impossible to miss. The label is never built into production.
+// All copy comes from src/data/site.js. The backdrop (src/data/media.js:
+// `workshop`) is AI-generated, not a photograph of the real shop; the
+// owner reviewed and explicitly approved using it anyway (see the
+// `ownerApproved` note on that entry). Shown with an empty alt - it's
+// atmospheric, not a claim about what the shop looks like.
 // ============================================================================
 import { Picture } from "astro:assets";
 import { site } from "../../data/site.js";
 import { media } from "../../data/media.js";
 
 const { titleLines, lead } = site.hero;
-const showUnverifiedFlag = import.meta.env.DEV && !media.workshop.verified;
 ---
 
 <section id="inicio" class="hero" data-hero aria-labelledby="hero-title">
@@ -47,7 +48,6 @@ const showUnverifiedFlag = import.meta.env.DEV && !media.workshop.verified;
       <div class="hero-shade" aria-hidden="true"></div>
       <div class="hero-dim" data-hero-dim aria-hidden="true"></div>
       <span class="hero-edge" data-hero-edge aria-hidden="true"></span>
-      {showUnverifiedFlag && <span class="dev-flag">DEV: imagen no verificada (taller.png)</span>}
     </div>
 
     <!-- Copy + bottom strip. During the desktop hero -> Maxxis transition this
@@ -178,17 +178,6 @@ const showUnverifiedFlag = import.meta.env.DEV && !media.workshop.verified;
     height: 3px;
     background: var(--color-brand);
     opacity: 0;
-  }
-
-  .dev-flag {
-    position: absolute;
-    right: var(--space-3);
-    top: calc(var(--nav-height) + var(--space-3));
-    padding: var(--space-1) var(--space-2);
-    background: #ffd400;
-    color: var(--color-black);
-    font-size: 0.75rem;
-    font-weight: var(--font-weight-bold);
   }
 
   /* ---- Copy ------------------------------------------------------------ */
