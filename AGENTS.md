@@ -22,7 +22,7 @@ Marketing website for **Neumáticos Osorno**, a family tire shop in Osorno, Chil
 - Do not edit, move, rename or delete any of those files on any branch unless the owner explicitly asks.
 - The Astro project (`src/`, `public/`, `astro.config.mjs`) is **not deployed yet**. Nothing in `dist/` is live.
 - Never change GitHub Pages settings, the `CNAME`, DNS or repository settings.
-- The Web3Forms `access_key` in the contact form is public by design (it is a client-side form key), but never replace or rotate it without being asked.
+- The Contacto section has no email-submit form (owner's decision, 2026-10-17): no Web3Forms, no "send us a message" input anywhere on the site. The email address is shown only in the footer, as a `mailto:` link, not as a form. Don't reintroduce a contact form without being asked.
 
 ## 4. Git workflow
 
@@ -175,7 +175,7 @@ Don't invent products, prices, stock, services, reviews, testimonials, statistic
 Before any commit:
 
 - `npm run build` succeeds with no errors.
-- Manual checks: every nav link scrolls to its section and updates the active state, the URL hash is correct, and back/forward work. Legacy URLs redirect. The mobile menu works with keyboard and touch. Reduced motion shows all content. There's no horizontal scroll at 360px. The contact form still submits to Web3Forms.
+- Manual checks: every nav link scrolls to its section and updates the active state, the URL hash is correct, and back/forward work. Legacy URLs redirect. The mobile menu works with keyboard and touch. Reduced motion shows all content. There's no horizontal scroll at 360px.
 - Console is free of errors and ScrollTrigger warnings.
 - For visual changes, take screenshots at mobile and desktop widths when a browser tool is available.
 

@@ -3,12 +3,13 @@
 // ContactSection  (#contacto)
 // ============================================================================
 // The conversion chapter, on full brand red. One obvious next step
-// (WhatsApp - the business's main channel), every other real channel as a
-// big tappable row, and the live site's contact form on a white panel.
+// (WhatsApp - the business's main channel) and every other tappable
+// channel. No contact form: the owner chose not to offer an email-submit
+// path here - the email address itself is still shown, but only in the
+// footer (see Footer.astro), not as an entry point up here.
 //
 // Contact details, address and hours are the ones CONFIRMED by the business
-// (src/data/site.js) and match the LocalBusiness structured data. The form
-// is the live site's Web3Forms form, unchanged (see site.contactForm).
+// (src/data/site.js) and match the LocalBusiness structured data.
 //
 // "Visítanos" row: an interactive Google Maps iframe + directions links.
 //   - With PUBLIC_GOOGLE_MAPS_EMBED_KEY set, the map uses the official Maps
@@ -31,12 +32,11 @@ const telHref = (phone: string) => `tel:${phone.replace(/\s/g, "")}`;
 const channels = [
   { label: "WhatsApp", value: site.contact.whatsappPhone, href: whatsappMessageUrl("Hola, quiero hacer una consulta."), external: true },
   ...site.contact.phones.map((phone) => ({ label: "Teléfono", value: phone, href: telHref(phone), external: false })),
-  { label: "Correo", value: site.contact.email, href: `mailto:${site.contact.email}`, external: false },
 ];
 ---
 
 <section id="contacto" class="contact" aria-labelledby="contacto-title">
-  <div class="container contact-grid">
+  <div class="container">
     <div class="contact-intro">
       <h2 id="contacto-title" class="contact-title" data-reveal-words>
         <SplitWords text="Contacto" />
@@ -75,30 +75,6 @@ const channels = [
           ))
         }
       </ul>
-    </div>
-
-    <div class="form-panel" data-reveal-mask>
-      <h3 class="form-title">Envíanos un mensaje</h3>
-      <form class="form" action={site.contactForm.action} method="POST" data-track-form="contacto">
-        <input type="hidden" name="access_key" value={site.contactForm.accessKey} />
-
-        <div class="field">
-          <label for="contact-name">Nombre</label>
-          <input id="contact-name" type="text" name="name" autocomplete="name" required />
-        </div>
-
-        <div class="field">
-          <label for="contact-email">Correo electrónico</label>
-          <input id="contact-email" type="email" name="email" autocomplete="email" required />
-        </div>
-
-        <div class="field">
-          <label for="contact-message">Mensaje</label>
-          <textarea id="contact-message" name="message" rows="5" required></textarea>
-        </div>
-
-        <button type="submit" class="button button--red button--block">Enviar mensaje</button>
-      </form>
     </div>
   </div>
 
@@ -172,15 +148,11 @@ const channels = [
     padding-block: var(--space-9);
   }
 
-  .contact-grid {
-    display: grid;
-    gap: var(--space-8);
-  }
-
   .contact-intro {
     display: grid;
     gap: var(--space-5);
     align-content: start;
+    max-width: 44rem;
   }
 
   /* Black on red passes contrast only at display sizes - this is one. */
@@ -277,74 +249,6 @@ const channels = [
   /* Focus ring must read on red: black instead of the red default. */
   .contact :focus-visible {
     outline-color: var(--color-black);
-  }
-
-  /* ---- Form ------------------------------------------------------------ */
-
-  .form-panel {
-    align-self: start;
-    padding: var(--space-6) var(--space-5);
-    background: var(--color-white);
-    color: var(--color-ink);
-  }
-
-  .form-title {
-    margin-bottom: var(--space-5);
-    font-family: var(--font-display);
-    font-size: var(--font-size-2xl);
-    font-weight: var(--font-weight-black);
-    font-stretch: var(--font-stretch-condensed);
-    text-transform: uppercase;
-  }
-
-  .form {
-    display: grid;
-    gap: var(--space-5);
-  }
-
-  .field {
-    display: grid;
-    gap: var(--space-2);
-  }
-
-  .field label {
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-semibold);
-    font-stretch: var(--font-stretch-expanded);
-  }
-
-  .field input,
-  .field textarea {
-    width: 100%;
-    min-height: 48px;
-    padding: var(--space-3) 0;
-    background: transparent;
-    border: none;
-    border-bottom: 2px solid var(--color-ink);
-    border-radius: 0;
-    color: var(--color-ink);
-    font-size: var(--font-size-base);
-    transition: border-color var(--transition-fast);
-  }
-
-  .field textarea {
-    resize: vertical;
-  }
-
-  .field input:focus,
-  .field textarea:focus {
-    outline: none;
-    border-bottom-color: var(--color-brand);
-  }
-
-  .field input:focus-visible,
-  .field textarea:focus-visible {
-    outline: 2px solid var(--color-brand);
-    outline-offset: 4px;
-  }
-
-  .form-panel :focus-visible {
-    outline-color: var(--color-brand);
   }
 
   /* ---- Visítanos: map + address + hours ------------------------------ */
@@ -472,19 +376,6 @@ const channels = [
     .contact-primary,
     .contact-whatsapp {
       width: 100%;
-    }
-  }
-
-  @media (min-width: 1024px) {
-    .contact-grid {
-      grid-template-columns: 7fr 5fr;
-      align-items: start;
-      column-gap: var(--space-8);
-    }
-
-    .form-panel {
-      padding: var(--space-7) var(--space-6);
-      margin-top: var(--space-7);
     }
   }
 </style>

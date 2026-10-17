@@ -58,11 +58,11 @@ export const site = {
     locale: "es_CL",
   },
 
-  // Contact details CONFIRMED by the business (Phase 3B). These replace the
-  // two mobile numbers the legacy site listed; do not reintroduce those or
-  // any number from third-party directories.
+  // Contact details CONFIRMED by the business (Phase 3B, updated
+  // 2026-10-17 at the owner's request to add back one of the legacy
+  // mobile numbers alongside the confirmed landline).
   contact: {
-    phones: ["+56 64 226 3370"],
+    phones: ["+56 64 226 3370", "+56 9 7837 9233"],
     email: "contacto@neumaticososorno.cl",
     // wa.me link used by the floating WhatsApp button on every page.
     whatsappUrl: "https://wa.me/56981898985",
@@ -87,14 +87,6 @@ export const site = {
     { label: "Sábado", schemaDays: ["Saturday"], opens: "09:30", closes: "13:30" },
   ],
   closedLabel: "Domingo: cerrado",
-
-  // The live contacto.html form, carried over unchanged: it posts to
-  // Web3Forms with this access key (a public, client-side key by design -
-  // see AGENTS.md section 3; never replace it without being asked).
-  contactForm: {
-    action: "https://api.web3forms.com/submit",
-    accessKey: "22d01891-4d79-4f86-9516-802ce4d272a3",
-  },
 
   shipping: {
     message: "Despacho gratuito",
