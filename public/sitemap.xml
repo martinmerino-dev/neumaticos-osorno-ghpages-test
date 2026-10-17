@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  The site is a single page; section anchors (#maxxis, ...) are not separate
-  URLs, and the legacy .html pages are redirects, so only the homepage is
-  listed. Update <lastmod> when the content changes meaningfully.
+  TEST DEPLOYMENT - neumaticos-osorno-ghpages-test. Intentionally empty:
+  this is an isolated GitHub Pages compatibility test, not the production
+  site (https://neumaticososorno.cl), and nothing here should be indexed
+  or listed as a real URL. An empty <urlset> (zero <url> entries) is
+  valid per the sitemaps.org protocol. See public/robots.txt for the
+  matching Disallow directive - this file is no longer referenced from
+  there on purpose, since there is nothing in it worth a crawler finding.
 -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>https://neumaticososorno.cl/</loc>
-    <lastmod>2026-09-27</lastmod>
-  </url>
 </urlset>

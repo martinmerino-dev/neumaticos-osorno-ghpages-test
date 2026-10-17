@@ -130,11 +130,18 @@ export const site = {
 
   // Legacy page URLs -> the section that replaced them. Each one builds to
   // a small redirect page (src/pages/*.astro) so old links keep working.
+  //
+  // TEST-COPY ONLY: prefixed with BASE_URL because these are root-relative
+  // cross-page targets (from e.g. /maxxis.html to the homepage's #maxxis),
+  // not same-page anchors - under a GitHub Pages /repo-name/ subpath a bare
+  // "/#maxxis" would resolve against the true domain root and 404. In
+  // production (root domain, no base) BASE_URL is just "/", so this stays
+  // byte-identical there - this is not a production behavior change.
   legacyRedirects: {
-    maxxis: "/#maxxis",
-    neumaticos: "/#neumaticos",
-    neumaticos_agricolas: "/#agricolas",
-    contacto: "/#contacto",
+    maxxis: `${import.meta.env.BASE_URL.replace(/\/$/, "")}/#maxxis`,
+    neumaticos: `${import.meta.env.BASE_URL.replace(/\/$/, "")}/#neumaticos`,
+    neumaticos_agricolas: `${import.meta.env.BASE_URL.replace(/\/$/, "")}/#agricolas`,
+    contacto: `${import.meta.env.BASE_URL.replace(/\/$/, "")}/#contacto`,
   },
 
   footer: {

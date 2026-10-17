@@ -23,7 +23,7 @@ import { site } from "../data/site.js";
   rel="noopener noreferrer"
   aria-label="Escríbenos por WhatsApp"
 >
-  <img src="/icons/whatsapp.svg" alt="" />
+  <img src={`${import.meta.env.BASE_URL.replace(/\/$/, "")}/icons/whatsapp.svg`} alt="" />
 </a>
 
 <script>

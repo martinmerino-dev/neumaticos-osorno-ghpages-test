@@ -23,7 +23,9 @@ interface Props {
 }
 
 const { to, title } = Astro.props;
-const canonical = new URL("/", Astro.site);
+// TEST-COPY ONLY: base-aware (production has no base, so this is
+// byte-identical to the original "/" there).
+const canonical = new URL(`${import.meta.env.BASE_URL.replace(/\/$/, "")}/`, Astro.site);
 ---
 
 <!doctype html>
@@ -32,7 +34,9 @@ const canonical = new URL("/", Astro.site);
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{title} - {site.name}</title>
-    <meta name="robots" content="noindex" />
+    <!-- TEST-COPY ONLY: nofollow added alongside the original noindex, to
+         match BaseLayout's robots directive for this isolated test deployment. -->
+    <meta name="robots" content="noindex, nofollow" />
     <link rel="canonical" href={canonical} />
     <meta http-equiv="refresh" content={`0; url=${to}`} />
     <script is:inline define:vars={{ to }}>

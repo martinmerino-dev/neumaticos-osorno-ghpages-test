@@ -2,12 +2,12 @@
   "name": "Neumáticos Osorno",
   "short_name": "Neumáticos Osorno",
   "lang": "es-CL",
-  "start_url": "/",
+  "start_url": "/neumaticos-osorno-ghpages-test/",
   "display": "browser",
   "background_color": "#16181c",
   "theme_color": "#16181c",
   "icons": [
-    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" }
+    { "src": "/neumaticos-osorno-ghpages-test/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/neumaticos-osorno-ghpages-test/icon-512.png", "sizes": "512x512", "type": "image/png" }
   ]
 }

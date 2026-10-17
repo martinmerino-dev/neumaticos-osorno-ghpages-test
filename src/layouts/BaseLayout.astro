@@ -37,8 +37,16 @@ interface Props {
 
 const { title = site.seo.title, description = site.seo.description } = Astro.props;
 // "/index.html" and "/" are the same page; always point at "/".
+// Astro.url already includes BASE_URL, so canonicalUrl is correct as-is.
 const canonicalUrl = new URL(Astro.url.pathname.replace(/index\.html$/, ""), Astro.site);
-const ogImageUrl = new URL(site.seo.ogImage, Astro.site);
+// TEST-COPY ONLY: site.seo.ogImage is a plain root-relative string (not
+// processed by Astro's base-aware URL generation), so it's prefixed with
+// BASE_URL by hand here. In production BASE_URL is "/", so this is
+// byte-identical to the original there.
+const ogImageUrl = new URL(
+  `${import.meta.env.BASE_URL.replace(/\/$/, "")}/${site.seo.ogImage.replace(/^\//, "")}`,
+  Astro.site,
+);
 const logoFile = await getImage({ src: media.logo.src, width: 600, format: "png" });
 
 // Google Analytics 4 Measurement ID ("G-XXXXXXXXXX") from the build
@@ -53,9 +61,9 @@ const gaId = /^G-[A-Z0-9]{4,}$/.test(rawGaId) ? rawGaId : undefined;
 const structuredData = {
   "@context": "https://schema.org",
   "@type": "TireShop",
-  "@id": new URL("/#negocio", Astro.site).href,
+  "@id": new URL(`${import.meta.env.BASE_URL.replace(/\/$/, "")}/#negocio`, Astro.site).href,
   name: site.name,
-  url: new URL("/", Astro.site).href,
+  url: new URL(`${import.meta.env.BASE_URL.replace(/\/$/, "")}/`, Astro.site).href,
   logo: new URL(logoFile.src, Astro.site).href,
   image: ogImageUrl.href,
   telephone: site.contact.phones[0],
@@ -91,16 +99,18 @@ const structuredData = {
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{title}</title>
     <meta name="description" content={description} />
-    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <!-- TEST-COPY ONLY: noindex/nofollow for this isolated GitHub Pages
+         test deployment. Production keeps "index, follow, max-image-preview:large". -->
+    <meta name="robots" content="noindex, nofollow" />
     <meta name="theme-color" content="#16181c" />
     <!-- Carried over from the live index.html (Search Console ownership). -->
     <meta name="google-site-verification" content="JqSEK9LBg_wztxruFbG3S2MrNLNfLRs9wMZxPKNfdAs" />
 
     <!-- Favicons: generated from the official logo (scripts/brand/). -->
-    <link rel="icon" href="/favicon.ico" sizes="48x48" />
-    <link rel="icon" href="/favicon-32x32.png" type="image/png" sizes="32x32" />
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-    <link rel="manifest" href="/site.webmanifest" />
+    <link rel="icon" href={`${import.meta.env.BASE_URL.replace(/\/$/, "")}/favicon.ico`} sizes="48x48" />
+    <link rel="icon" href={`${import.meta.env.BASE_URL.replace(/\/$/, "")}/favicon-32x32.png`} type="image/png" sizes="32x32" />
+    <link rel="apple-touch-icon" href={`${import.meta.env.BASE_URL.replace(/\/$/, "")}/apple-touch-icon.png`} />
+    <link rel="manifest" href={`${import.meta.env.BASE_URL.replace(/\/$/, "")}/site.webmanifest`} />
 
     <!--
       html.js: JS is running (components may hide things JS will reveal).

@@ -1,9 +1,14 @@
-# Neumáticos Osorno - https://neumaticososorno.cl
-# Everything is public. The old page URLs (maxxis.html, neumaticos.html,
-# neumaticos_agricolas.html, contacto.html) are redirect pages marked
-# noindex with a canonical to the homepage; they stay crawlable so search
-# engines can see those signals.
+# TEST DEPLOYMENT - neumaticos-osorno-ghpages-test
+# This is an isolated GitHub Pages compatibility test for a redesign of
+# Neumáticos Osorno. It is NOT the production website. The real site is
+# https://neumaticososorno.cl - this deployment should never be treated
+# as canonical, linked publicly, or indexed.
+#
+# Limitation: Disallow only asks well-behaved crawlers not to crawl this
+# site. It is not a security or privacy control - it does not prevent a
+# human (or a crawler that ignores robots.txt) from visiting pages
+# directly, and a URL can sometimes still appear in search results with
+# no description if it's discovered through an external link, even
+# without ever being crawled. Treat this as a best-effort signal only.
 User-agent: *
-Allow: /
-
-Sitemap: https://neumaticososorno.cl/sitemap.xml
+Disallow: /
