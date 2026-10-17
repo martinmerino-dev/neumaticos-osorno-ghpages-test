@@ -49,6 +49,14 @@ const ogImageUrl = new URL(
 );
 const logoFile = await getImage({ src: media.logo.src, width: 600, format: "png" });
 
+// Self-hosted Archivo (variable font: weight 400-900, width 62-125%),
+// replacing the Google Fonts CDN request. The file at public/fonts/
+// is the authentic woff2 Google itself serves for this exact family/
+// axis-range request (downloaded from fonts.gstatic.com; license in
+// public/fonts/OFL.txt). Same BASE_URL-prefixing pattern as every other
+// local asset path in this test copy.
+const fontUrl = `${import.meta.env.BASE_URL.replace(/\/$/, "")}/fonts/archivo-variable.woff2`;
+
 // Google Analytics 4 Measurement ID ("G-XXXXXXXXXX") from the build
 // environment. Anything that isn't a well-formed ID disables analytics.
 const rawGaId = import.meta.env.PUBLIC_GA_MEASUREMENT_ID ?? "";
@@ -152,16 +160,33 @@ const structuredData = {
     <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
 
     <!--
-      Archivo (variable: weight + width axes) from the Google Fonts CDN,
-      same delivery as the live site. Self-hosting needs the font file (see
-      the Phase 3A report) - planned performance follow-up.
+      Archivo (variable: weight + width axes), self-hosted from
+      public/fonts/ - no external font-provider request anymore.
+      Preloaded because it's the body/display font used for above-the-fold
+      text (the hero headline), so the browser should start fetching it
+      immediately rather than discovering it only once it parses the
+      @font-face rule below.
     -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&display=swap"
-      rel="stylesheet"
-    />
+    <link rel="preload" href={fontUrl} as="font" type="font/woff2" crossorigin />
+    <!--
+      The URL is interpolated directly as text (set:html), not via
+      define:vars: @font-face is a global at-rule with no element of its
+      own, but define:vars works by writing the variable onto specific
+      elements' `style` attributes - inside @font-face there's no element
+      for it to resolve against, so var(--fontUrl) silently resolved to
+      nothing and the build dropped the whole `src` declaration. Verified
+      by inspecting the compiled CSS after the first attempt.
+    -->
+    <style set:html={`
+      @font-face {
+        font-family: "Archivo";
+        font-style: normal;
+        font-weight: 400 900;
+        font-stretch: 62% 125%;
+        font-display: swap;
+        src: url("${fontUrl}") format("woff2");
+      }
+    `} />
   </head>
 
   <body>
