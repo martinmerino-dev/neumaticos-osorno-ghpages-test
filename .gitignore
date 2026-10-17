@@ -8,6 +8,9 @@ dist/
 # Editor/OS noise
 .DS_Store
 Thumbs.db
+.vscode/
+.idea/
+*.log
 
 # Local environment (see .env.example)
 .env
